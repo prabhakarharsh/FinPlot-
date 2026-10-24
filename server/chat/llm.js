@@ -457,26 +457,46 @@ export async function* streamMockChat({ system, messages, tools, signal }) {
 
     let responseText = '';
     const firstSourceId = sources[0]?.id ? `[txn:${sources[0].id}]` : `[calc:${calc_id}]`;
+    const userPromptText = messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+    const isHinglish = /mera|meri|kharcha|kitna|hai|batao|kya|kaise|pichle|mahine|paisa|paise|kiska|sabse|kripya|badal/i.test(userPromptText);
 
     if (display.total_spent) {
-      responseText = `Aapka total spending ${display.total_spent} raha hai, aur total income ${display.total_income || 'N/A'} hai [calc:${calc_id}]. Net savings ${display.net_savings || '₹0'} (${display.savings_rate || '0%'}) bachi hai ${firstSourceId}.`;
+      responseText = isHinglish
+        ? `Aapka total spending ${display.total_spent} raha hai, aur total income ${display.total_income || 'N/A'} hai [calc:${calc_id}]. Net savings ${display.net_savings || '₹0'} (${display.savings_rate || '0%'}) bachi hai ${firstSourceId}.`
+        : `Your total spending is ${display.total_spent} and total income is ${display.total_income || 'N/A'} [calc:${calc_id}]. Your net savings balance is ${display.net_savings || '₹0'} (savings rate of ${display.savings_rate || '0%'}) ${firstSourceId}.`;
     } else if (display.matching_count) {
-      responseText = `Maine aapke records me se ${display.matching_count} dhundhe hain [calc:${calc_id}]. Total amount ${display.total_value_shown || '₹0'} hai ${firstSourceId}.`;
+      responseText = isHinglish
+        ? `Maine aapke records me se ${display.matching_count} dhundhe hain [calc:${calc_id}]. Total amount ${display.total_value_shown || '₹0'} hai ${firstSourceId}.`
+        : `Found ${display.matching_count} in your records [calc:${calc_id}]. Total amount is ${display.total_value_shown || '₹0'} ${firstSourceId}.`;
     } else if (display.top_merchant_name) {
-      responseText = `Aapka sabse bada kharcha ${display.top_merchant_name} par hua hai (${display.top_merchant_amount}) [calc:${calc_id}] ${firstSourceId}.`;
+      responseText = isHinglish
+        ? `Aapka sabse bada kharcha ${display.top_merchant_name} par hua hai (${display.top_merchant_amount}) [calc:${calc_id}] ${firstSourceId}.`
+        : `Your highest spending was with ${display.top_merchant_name} (${display.top_merchant_amount}) [calc:${calc_id}] ${firstSourceId}.`;
     } else if (display.monthly_total_cost) {
-      responseText = `Aapke total ${display.total_recurring_items} detect hue hain [calc:${calc_id}]. Inka total monthly cost ${display.monthly_total_cost} aur annual cost ${display.annual_total_cost} hai ${firstSourceId}.`;
+      responseText = isHinglish
+        ? `Aapke total ${display.total_recurring_items} detect hue hain [calc:${calc_id}]. Inka total monthly cost ${display.monthly_total_cost} aur annual cost ${display.annual_total_cost} hai ${firstSourceId}.`
+        : `Detected ${display.total_recurring_items} recurring commitments [calc:${calc_id}] with a monthly cost of ${display.monthly_total_cost} and annual cost of ${display.annual_total_cost} ${firstSourceId}.`;
     } else if (display.flags_count) {
-      responseText = `Aapke account me ${display.flags_count} review ke liye flag hue hain [calc:${calc_id}]. Inhe neutral criteria ke tahat review ke liye suggest kiya gaya hai ${firstSourceId}.`;
+      responseText = isHinglish
+        ? `Aapke account me ${display.flags_count} review ke liye flag hue hain [calc:${calc_id}]. Inhe neutral criteria ke tahat review ke liye suggest kiya gaya hai ${firstSourceId}.`
+        : `There are ${display.flags_count} flagged for review [calc:${calc_id}]. These have been highlighted based on neutral review criteria ${firstSourceId}.`;
     } else if (display.scenario_monthly_surplus) {
-      responseText = `Scenario analysis ke anusaar, aapka monthly surplus ${display.scenario_monthly_surplus} ho jayega aur goal ${display.months_to_goal} me complete hone ka anumaan hai [calc:${calc_id}].`;
+      responseText = isHinglish
+        ? `Scenario analysis ke anusaar, aapka monthly surplus ${display.scenario_monthly_surplus} ho jayega aur goal ${display.months_to_goal} me complete hone ka anumaan hai [calc:${calc_id}].`
+        : `Based on this scenario, your monthly surplus becomes ${display.scenario_monthly_surplus}, reaching your goal in estimated ${display.months_to_goal} [calc:${calc_id}].`;
     } else if (display.proposal_summary) {
-      responseText = `Maine ye action prepare kiya hai: ${display.proposal_summary} [calc:${calc_id}]. Kripya niche diye gaye card me confirm karein.`;
+      responseText = isHinglish
+        ? `Maine ye action prepare kiya hai: ${display.proposal_summary} [calc:${calc_id}]. Kripya niche diye gaye card me confirm karein.`
+        : `Prepared action proposal: ${display.proposal_summary} [calc:${calc_id}]. Please review and confirm below.`;
     } else if (display.total_transactions) {
-      responseText = `Aapke paas ${display.date_range} ke dauran kul ${display.total_transactions} hain [calc:${calc_id}]. Data type: ${display.data_type}.`;
+      responseText = isHinglish
+        ? `Aapke paas ${display.date_range} ke dauran kul ${display.total_transactions} hain [calc:${calc_id}]. Data type: ${display.data_type}.`
+        : `You have ${display.total_transactions} recorded across ${display.date_range} [calc:${calc_id}]. Dataset: ${display.data_type}.`;
     } else {
       const firstKey = Object.keys(display)[0];
-      responseText = `Aapke financial records ke anusaar: ${firstKey ? `${firstKey}: ${display[firstKey]}` : 'Data uplabdh hai'} [calc:${calc_id}] ${firstSourceId}.`;
+      responseText = isHinglish
+        ? `Aapke financial records ke anusaar: ${firstKey ? `${firstKey}: ${display[firstKey]}` : 'Data uplabdh hai'} [calc:${calc_id}] ${firstSourceId}.`
+        : `According to your financial records: ${firstKey ? `${firstKey}: ${display[firstKey]}` : 'Data available'} [calc:${calc_id}] ${firstSourceId}.`;
     }
 
     // Stream text in words

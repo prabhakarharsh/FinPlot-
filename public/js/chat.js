@@ -343,7 +343,8 @@ export async function sendUserMessage(messageText) {
         conversation_id: activeConversationId || null,
         message: cleanMsg,
         transactions: Array.isArray(state.transactions) ? state.transactions : [],
-        goals: Array.isArray(state.goals) ? state.goals : []
+        goals: Array.isArray(state.goals) ? state.goals : [],
+        categories: Array.isArray(state.categories) ? state.categories : []
       }),
       signal: currentAbortController.signal
     });

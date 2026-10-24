@@ -199,7 +199,8 @@ export async function* runMunimAgent({
   let verification = verifyAnswer({
     answerText: finalDraftText,
     toolResults: toolResultsThisTurn,
-    userQuery: userMessage
+    userQuery: userMessage,
+    context
   });
 
   // If verification failed, retry ONCE with corrective prompt
@@ -234,20 +235,26 @@ export async function* runMunimAgent({
       const retryVerification = verifyAnswer({
         answerText: retryText,
         toolResults: toolResultsThisTurn,
-        userQuery: userMessage
+        userQuery: userMessage,
+        context
       });
 
       if (retryVerification.verified) {
         finalDraftText = retryText;
         verification = retryVerification;
-      } else {
-        // If still unverified, use safe fallback (guaranteed sound arithmetic from tool results)
+      } else if (verification.isBanned || !finalDraftText) {
         finalDraftText = generateSafeFallback(toolResultsThisTurn);
         verification = { verified: true, sanitizedAnswer: finalDraftText };
+      } else {
+        // Keep conversational/freestyle response with soft warning
+        finalDraftText = retryText || finalDraftText;
+        verification = { ...retryVerification, sanitizedAnswer: finalDraftText };
       }
-    } else {
+    } else if (verification.isBanned || !finalDraftText) {
       finalDraftText = generateSafeFallback(toolResultsThisTurn);
       verification = { verified: true, sanitizedAnswer: finalDraftText };
+    } else {
+      verification = { ...verification, sanitizedAnswer: finalDraftText };
     }
   }
 

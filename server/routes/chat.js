@@ -36,7 +36,8 @@ const chatMessageSchema = z.object({
   conversation_id: z.string().nullish().or(z.literal('')),
   message: z.union([z.string(), z.null(), z.undefined()]).transform(v => (v || '').trim()),
   transactions: z.array(z.any()).nullish().transform(v => v || []),
-  goals: z.array(z.any()).nullish().transform(v => v || [])
+  goals: z.array(z.any()).nullish().transform(v => v || []),
+  categories: z.array(z.any()).nullish().transform(v => v || [])
 }).refine(data => Boolean(data.message && data.message.length > 0), {
   message: 'Please provide a non-empty message'
 });
@@ -174,6 +175,10 @@ router.post('/', authenticateUser, async (req, res) => {
     let userFlags = [];
     let isSample = false;
 
+    const bodyTxns = Array.isArray(req.body.transactions) ? req.body.transactions : [];
+    const bodyGoals = Array.isArray(req.body.goals) ? req.body.goals : [];
+    const bodyCats = Array.isArray(req.body.categories) ? req.body.categories : [];
+
     if (!isDemo && req.supabase) {
       const [{ data: txns }, { data: cats }, { data: goals }, { data: flags }] = await Promise.all([
         req.supabase.from('transactions').select('*').order('txn_date', { ascending: false }),
@@ -181,22 +186,27 @@ router.post('/', authenticateUser, async (req, res) => {
         req.supabase.from('goals').select('*'),
         req.supabase.from('flags').select('*')
       ]);
-      userTransactions = (txns && txns.length) ? txns : (Array.isArray(req.body.transactions) ? req.body.transactions : []);
-      userCategories = cats || [];
-      userGoals = (goals && goals.length) ? goals : (Array.isArray(req.body.goals) ? req.body.goals : []);
+
+      const catMap = new Map((cats || []).map(c => [c.id, c.name]));
+      const dbTxnsMapped = (txns || []).map(t => ({
+        ...t,
+        category_name: t.category_name || (t.category_id ? catMap.get(t.category_id) : 'Uncategorised') || 'Uncategorised'
+      }));
+
+      // Prioritize live client transactions if provided by active session
+      userTransactions = bodyTxns.length > 0 ? bodyTxns : dbTxnsMapped;
+      userCategories = bodyCats.length > 0 ? bodyCats : (cats || []);
+      userGoals = bodyGoals.length > 0 ? bodyGoals : (goals || []);
       userFlags = flags || [];
-      isSample = userTransactions[0]?.is_sample || false;
+      isSample = Boolean(userTransactions[0]?.is_sample || userTransactions[0]?.id?.startsWith('sample-'));
     } else {
-      const rawTxns = Array.isArray(req.body.transactions)
-        ? req.body.transactions
-        : (demoData?.transactions || []);
-      userTransactions = rawTxns.filter(t => !t.is_sample && !t.id?.startsWith('sample-'));
-      userCategories = demoData?.categories || [];
-      userGoals = Array.isArray(req.body.goals)
-        ? req.body.goals
-        : (demoData?.goals || []);
+      // Demo / Local session: prioritize client transactions, then demoStore
+      const demoTxns = demoData?.transactions || [];
+      userTransactions = bodyTxns.length > 0 ? bodyTxns : demoTxns;
+      userCategories = bodyCats.length > 0 ? bodyCats : (demoData?.categories || []);
+      userGoals = bodyGoals.length > 0 ? bodyGoals : (demoData?.goals || []);
       userFlags = demoData?.flags || [];
-      isSample = false;
+      isSample = Boolean(userTransactions[0]?.is_sample || userTransactions[0]?.id?.startsWith('sample-'));
     }
 
     const context = {

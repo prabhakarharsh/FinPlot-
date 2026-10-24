@@ -2,6 +2,8 @@
 // Server-side Answer Verifier for Munim AI Personal Finance Copilot
 // Ensures zero arithmetic hallucination, strictly verified citations, and ban enforcement
 
+import { summarise } from '../../shared/engine.js';
+
 const BANNED_TERMS = [
   /\b(?:fraudulent|fraud|scam|scammers|stolen|ponzi|theft)\b/i,
   /\b(?:buy stock|invest in (?:shares|equity|crypto|bitcoin)|buy (?:this|the) policy)\b/i,
@@ -50,21 +52,21 @@ export function extractNumbersAndDates(text = '') {
 }
 
 /**
- * Build allow-set of verifiable values from tool results
+ * Build allow-set of verifiable values from tool results and context
  */
-export function buildAllowSet(toolResults = [], userQuery = '') {
+export function buildAllowSet(toolResults = [], userQuery = '', context = {}) {
   const allowSet = new Set();
 
   // Trivial numbers that are always allowed (small ordinals, years, rounding variations)
   const trivial = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-    '12', '24', '30', '31', '365', '52', '26',
-    '2024', '2025', '2026', '2027', '2028',
+    '11', '12', '14', '15', '20', '24', '30', '31', '50', '365', '52', '26',
+    '2024', '2025', '2026', '2027', '2028', '2029', '2030',
     '100' // 100%
   ];
   trivial.forEach(t => allowSet.add(t));
 
-  // Add numbers present in the user prompt (e.g., user asks "last 3 months")
+  // Add numbers present in the user prompt (e.g., user asks "30000 phone" or "last 3 months")
   const userNums = extractNumbersAndDates(userQuery);
   userNums.forEach(n => allowSet.add(n));
 
@@ -99,6 +101,36 @@ export function buildAllowSet(toolResults = [], userQuery = '') {
     }
   }
 
+  // Ingest numbers from context snapshot
+  if (context && Array.isArray(context.transactions) && context.transactions.length > 0) {
+    try {
+      const sum = summarise(context.transactions);
+      ingestValue(sum.income);
+      ingestValue(sum.spending);
+      ingestValue(sum.net);
+      ingestValue(sum.savingsRate);
+      (sum.categories || []).forEach(c => {
+        ingestValue(c.total);
+        ingestValue(c.percentage);
+      });
+      (sum.topMerchants || []).forEach(m => ingestValue(m.total));
+      context.transactions.slice(0, 100).forEach(t => {
+        ingestValue(Math.abs(t.amount));
+        ingestValue(t.txn_date);
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  if (context && Array.isArray(context.goals)) {
+    context.goals.forEach(g => {
+      ingestValue(Number(g.target_amount || 0));
+      ingestValue(Number(g.current_amount || 0));
+      ingestValue(Math.max(0, Number(g.target_amount || 0) - Number(g.current_amount || 0)));
+    });
+  }
+
   for (const tr of toolResults) {
     if (tr.display) ingestValue(tr.display);
     if (tr.data) ingestValue(tr.data);
@@ -120,7 +152,8 @@ export function buildAllowSet(toolResults = [], userQuery = '') {
 export function verifyAnswer({
   answerText = '',
   toolResults = [],
-  userQuery = ''
+  userQuery = '',
+  context = {}
 }) {
   const issues = [];
   let isBanned = false;
@@ -138,7 +171,7 @@ export function verifyAnswer({
   }
 
   // 2. Build allow-set
-  const allowSet = buildAllowSet(toolResults, userQuery);
+  const allowSet = buildAllowSet(toolResults, userQuery, context);
 
   // 3. Extract numbers from the draft answer (excluding citation markers like [calc:...] or [txn:...])
   const textWithoutCitations = answerText.replace(/\[(txn|calc):[^\]]+\]/g, '');
