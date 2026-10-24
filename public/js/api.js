@@ -298,27 +298,32 @@ export const api = {
 
       return googleUser;
     } catch (firebaseErr) {
-      console.warn('[Firebase Google Auth] Error:', firebaseErr);
+      console.warn('[Firebase Google Auth] Falling back:', firebaseErr);
       if (firebaseErr.code === 'auth/popup-closed-by-user') {
         throw new Error('Google sign-in popup was closed.');
-      } else if (firebaseErr.code === 'auth/unauthorized-domain') {
-        throw new Error('Domain not authorized in Firebase Console. Add your domain under Authentication > Settings > Authorized domains.');
-      } else if (firebaseErr.code === 'auth/operation-not-allowed') {
-        throw new Error('Google provider is not enabled in Firebase Console. Go to Firebase Console > Authentication > Sign-in method and enable Google.');
       }
 
+      // Try Supabase Google OAuth if available
       if (supabaseClient) {
-        const redirectTo = window.location.origin + '/index.html';
-        const { data, error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo
+        try {
+          const redirectTo = window.location.origin + '/index.html';
+          const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo
+            }
+          });
+          if (!error && data?.url) {
+            window.location.href = data.url;
+            return data;
           }
-        });
-        if (error) throw error;
-        return data;
+        } catch (sbErr) {
+          console.warn('[Supabase OAuth Error]:', sbErr);
+        }
       }
-      throw firebaseErr;
+
+      // Friendly fallback explaining alternative immediate sign-in options
+      throw new Error('Google Sign-In is not enabled for this domain yet. Please use "Sign In" or "Create Account" with your email below, or click "Continue as Guest".');
     }
   },
 
