@@ -275,6 +275,36 @@ export const api = {
    * Google OAuth Sign-In (Firebase 1-Click Popup with Supabase fallback)
    */
   async signInWithGoogle() {
+    // 1. Direct Supabase Google OAuth (creates authentic Supabase UUID user)
+    if (supabaseClient) {
+      try {
+        const redirectTo = window.location.origin + '/index.html';
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo
+          }
+        });
+        if (error) {
+          console.warn('[Supabase Google Auth Error]:', error);
+          if (error.message?.includes('provider is not enabled') || error.code === 'validation_failed') {
+            throw new Error('Google Sign-In is not enabled in your Supabase project yet. Go to Supabase Dashboard > Authentication > Providers > Google to enable it, or use "Sign In" / "Create Account" with email below.');
+          }
+          throw error;
+        }
+        if (data?.url) {
+          window.location.href = data.url;
+          return data;
+        }
+      } catch (sbErr) {
+        if (sbErr.message?.includes('Google Sign-In is not enabled') || sbErr.message?.includes('provider is not enabled')) {
+          throw sbErr;
+        }
+        console.warn('[Supabase OAuth Error]:', sbErr);
+      }
+    }
+
+    // 2. Secondary fallback (Localhost Firebase trial)
     try {
       const { user, token } = await firebaseSignInWithGoogle();
       const googleUser = {
@@ -298,31 +328,9 @@ export const api = {
 
       return googleUser;
     } catch (firebaseErr) {
-      console.warn('[Firebase Google Auth] Falling back:', firebaseErr);
       if (firebaseErr.code === 'auth/popup-closed-by-user') {
         throw new Error('Google sign-in popup was closed.');
       }
-
-      // Try Supabase Google OAuth if available
-      if (supabaseClient) {
-        try {
-          const redirectTo = window.location.origin + '/index.html';
-          const { data, error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo
-            }
-          });
-          if (!error && data?.url) {
-            window.location.href = data.url;
-            return data;
-          }
-        } catch (sbErr) {
-          console.warn('[Supabase OAuth Error]:', sbErr);
-        }
-      }
-
-      // Friendly fallback explaining alternative immediate sign-in options
       throw new Error('Google Sign-In is not enabled for this domain yet. Please use "Sign In" or "Create Account" with your email below, or click "Continue as Guest".');
     }
   },
