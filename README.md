@@ -1,238 +1,407 @@
-# FinPilot — AI-Powered Personal Finance Copilot
+<div align="center">
 
-FinPilot is a personal finance copilot prototype engineered with zero frontend frameworks, pure deterministic financial mathematics in a shared engine, Supabase PostgreSQL with Row Level Security, and an AI copilot strictly grounded in tool executions.
+#  FinPilot
 
-> **Disclaimer:** FinPilot is an educational prototype. It is not regulated financial advice.
+### An AI-powered personal finance copilot for students and people who move cities to earn
+
+*Know where your money goes. Reach your goals sooner.*
+
+[**Live demo**](https://finplot-68ao.onrender.com) · [Features](#-features) · [Meet Munim](#-meet-munim-the-ai-copilot) · [Quick start](#-quick-start) · [Deployment](DEPLOYMENT.md)
+
+![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-ES%20Modules-000000?logo=express&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3ECF8E?logo=supabase&logoColor=white)
+![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?logo=javascript&logoColor=black)
+![AI](https://img.shields.io/badge/AI-Gemini%20%7C%20Anthropic-8B5CF6)
+![Tests](https://img.shields.io/badge/tests-128%20passing-16A34A)
+
+**Built by Team BYTES** for problem statement **FT-01: AI-Powered Personal Finance Copilot for Everyone**
+
+</div>
+
+> ⚠️ **Disclaimer:** FinPilot is an educational prototype. It is **not** regulated financial advice.
 
 ---
 
-## Architecture Diagram
+## 📖 Table of contents
+
+- [Why FinPilot](#-why-finpilot)
+- [Features](#-features)
+- [Meet Munim, the AI copilot](#-meet-munim-the-ai-copilot)
+- [How the numbers are calculated](#-how-the-numbers-are-calculated)
+- [Architecture](#-architecture)
+- [Tech stack](#-tech-stack)
+- [Quick start](#-quick-start)
+- [Configuration](#-configuration)
+- [Deployment](#-deployment)
+- [Testing](#-testing)
+- [Project structure](#-project-structure)
+- [Safeguards](#-safeguards)
+- [Roadmap](#-roadmap)
+- [Team BYTES](#-team-bytes)
+
+---
+
+## 💡 Why FinPilot
+
+The first time you manage your own money is usually in college or in a new city with your first job. Pocket money disappears before month-end. Rent, deposits, commute and food all arrive at once. UPI taps, food delivery and subscriptions quietly add up, and nobody has a budgeting habit yet.
+
+Most finance apps either want your **bank login**, show you **balances instead of answers**, or give you **AI insights you can't check**.
+
+FinPilot is built the other way around:
+
+| Typical finance app | FinPilot |
+|---|---|
+| Wants your bank login or account linking | **Privacy-first.** CSV, voice or manual entry. No bank credentials, ever |
+| "AI insights" you can't verify | **Every number is traceable** to its source transactions |
+| English-only, full of jargon | **English, Hindi and Hinglish** in plain language |
+| Made for investors and portfolios | **Made for tight budgets:** rent, subscriptions, a trip or laptop goal |
+
+**Who it's for**
+
+- 🎓 **College students** managing pocket money, UPI spends and subscriptions for the first time
+- 🧳 **City movers** on a first salary, handling rent, bills and money sent back home
+
+---
+
+## ✨ Features
+
+| | Feature | What it does |
+|---|---|---|
+| 📊 | **Dashboard** | Live KPIs for inflow, spending, net surplus and savings rate, each with a "how is this calculated?" note. Spending by category and monthly income vs. spending charts |
+| ➕ | **Three ways to add data** | **Add Transaction** manually, **Voice Add** (say *"300 for shopping"* or *"500 petrol"*), or **Import CSV** from a bank statement |
+| 🧾 | **Import with reconciliation** | CSV import ends with an audit that checks rows, total inflow and total outflow against what was saved (`PASSED ✅`) |
+| 🏷️ | **Editable categories that learn** | Change a category inline. FinPilot asks *"Apply to all [merchant] transactions?"* and remembers your rule |
+| 🔁 | **Recurring and bills** | Detects subscriptions and bills (Netflix, electricity, mobile, gym), with confidence, next due date and yearly cost |
+| 🚩 | **Review (flagged for review)** | Surfaces unusual activity with plain-language reasons. Never labelled "fraud". You choose *This is normal*, *Dismiss* or *Follow up* |
+| 🎯 | **Goals and scenarios** | Set a goal, then use what-if levers (cut a category, add income, one-off expense) to see how much sooner you get there, with the maths shown |
+| 🤖 | **Munim AI copilot** | A chat assistant that answers from your own data only, with clickable citations |
+| 🔐 | **Auth** | Email and password, Google sign-in, or *Explore as Guest* with sample data |
+| 🌗 | **Dark and light themes** | Responsive layout. Sidebar on desktop, tab bar on mobile (under 900 px) |
+
+**Screens:** Dashboard · Transactions · Recurring & Bills · Review · Goals & Scenarios · Import Data
+
+---
+
+## 🤖 Meet Munim, the AI copilot
+
+*Munim* (मुनीम) means "accountant". Most chatbots invent numbers. Munim is built so it can't.
+
+```mermaid
+flowchart LR
+    A["You ask a question"] --> B["Input guard<br/>blocks card numbers, OTP, CVV, PIN"]
+    B --> C["LLM picks tools"]
+    C --> D["Tools run on engine.js<br/>all the maths"]
+    D --> E["LLM explains results"]
+    E --> F{"Answer verifier<br/>every number in the tool results?"}
+    F -- "yes" --> G["Answer with [txn] and [calc] citations"]
+    F -- "no" --> H["Retry once, then a safe verified fallback"]
+```
+
+- **Zero-arithmetic guarantee.** The model never calculates. It only explains results returned by tools.
+- **Server-side answer verifier.** Every number, date, currency amount and percentage in a draft answer is checked against the tool results. Anything unverified triggers a corrective retry or a safe fallback.
+- **Citations you can click.** Answers cite `[txn:<id>]` and `[calc:<tool_name>]`. Clicking a transaction chip jumps to and highlights that row.
+- **Pre-LLM input security.** Rejects over-long input, catches card numbers with the Luhn check, and blocks OTP, CVV and PIN patterns before any model sees them.
+- **Proposals, not silent changes.** Suggested actions (such as recategorising a merchant) appear as cards. Nothing changes until you tap **Yes, apply**, and every change has **Undo**.
+- **Multilingual.** Answers in English, Hindi or Hinglish.
+- **Provider-agnostic.** Switch between Gemini and Anthropic with one environment variable. A deterministic offline fallback keeps the demo working without an API key.
+
+### Evaluation
+
+| Suite | File | Result |
+|---|---|---|
+| 40 golden questions | `tests/chat_eval.json` | 100% tool selection, 100% numeric grounding, 100% verifier pass rate |
+| 25 red-team prompts | `tests/chat_redteam.json` | 100% pass: prompt injection (including via merchant names), cross-user leakage, jailbreaks |
+| Overall | `npm test` | 128 tests passing |
+
+Run `npm run chat:stats` for daily usage, token consumption, latency and verifier pass rates.
+
+---
+
+## 🧮 How the numbers are calculated
+
+Every figure in the dashboard and in Munim comes from one shared, pure-JavaScript module: **`shared/engine.js`**. It runs in both the browser and the server, so the dashboard and the chatbot always show identical totals.
+
+### 1. Integer-cent arithmetic
+
+All money is converted to integer cents (`Math.round(amount * 100)`) before any addition or aggregation, so floating-point drift can't corrupt totals.
+
+```text
+Plain JS:  0.1 + 0.2 = 0.30000000000000004
+FinPilot:  10¢ + 20¢ = 30¢
+```
+
+### 2. Categorisation priority
+
+1. **Your rules**, learned when you correct a category and confirm *"Apply to all"*
+2. **Keyword rules** in `shared/constants.js` (groceries, fuel, utilities, dining, subscriptions and more)
+3. **Fallback:** `Uncategorised`
+
+### 3. Recurring payment detection
+
+A merchant counts as recurring when it has **3 or more** occurrences, the intervals cluster around a known rhythm, and the amounts are similar.
+
+| Cadence | Interval |
+|---|---|
+| Weekly | 7 ± 3 days |
+| Bi-weekly | 14 ± 4 days |
+| Monthly | 30 ± 5 days |
+| Annual | 365 ± 15 days |
+
+Amount spread must be ≤ 25% of the mean. Output: confidence score, estimated next due date and the supporting transaction IDs.
+
+### 4. Neutral review flags (never "fraud")
+
+| Code | Rule |
+|---|---|
+| `UNUSUAL_AMOUNT` | Amount > mean + 3σ for a category with at least 5 transactions |
+| `NEW_LARGE_MERCHANT` | First transaction at a merchant with amount > 2× your median expense |
+| `POSSIBLE_DUPLICATE` | Same merchant and exact same amount twice within 48 hours |
+| `PRICE_CHANGE` | Recurring charge up by more than 15% on the previous cycle |
+
+### 5. Goal and what-if simulator
+
+```text
+NewMonthlySavings = (Income − Expenses) + Σ CategoryCuts + ExtraIncome
+MonthsToGoal      = ⌈ (GoalTarget − StartingBalance) ÷ NewMonthlySavings ⌉
+```
+
+Assumptions are always shown next to the result: constant income and expenses, linear contributions, and monthly compound yield only if you specify one.
+
+---
+
+## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Browser ["Frontend (Vanilla ES Modules)"]
-        UI["UI Screens & Views\n(Dashboard, Txns, Recurring, Flags, Goals, Scenarios)"]
-        ChatUI["AI Copilot Panel\n(Streaming UI, Citation Chips)"]
-        State["State Manager\n(Reactive Store, Auth, Session)"]
-        SharedFE["shared/engine.js\n(Identical client-side calculation)"]
+    subgraph Browser["Frontend: vanilla ES modules"]
+        UI["Screens<br/>Dashboard, Transactions, Recurring, Review, Goals, Scenarios"]
+        ChatUI["Munim panel<br/>streaming UI and citation chips"]
+        State["State manager<br/>store, auth, session"]
+        SharedFE["shared/engine.js"]
     end
 
-    subgraph Backend ["Node.js Express Server"]
-        Router["/api/chat & /api/health Routes"]
-        RateLimiter["IP / User Rate Limiter"]
-        AuthMiddleware["Supabase JWT Verification\n(Scoped per-user client)"]
-        LLMAdapter["llm.js (Gemini / Anthropic / Deterministic Fallback)"]
-        Tools["tools.js (Chatbot Tools)"]
-        SharedBE["shared/engine.js\n(Shared pure math & rules)"]
+    subgraph Backend["Node.js + Express"]
+        Router["/api/chat and /api/health"]
+        RateLimiter["Rate limiter"]
+        AuthMW["Supabase JWT verification<br/>per-user scoped client"]
+        LLM["llm.js<br/>Gemini, Anthropic, offline fallback"]
+        Tools["tools.js<br/>chatbot tools"]
+        SharedBE["shared/engine.js"]
     end
 
-    subgraph Database ["Supabase (PostgreSQL + RLS)"]
-        DB[("Tables: users, transactions, categories,\ncategory_rules, recurring_payments,\nflags, goals, scenarios, chat_messages")]
-        RLS["Row Level Security Policies\n(auth.uid() = user_id)"]
+    subgraph DB["Supabase"]
+        PG[("PostgreSQL")]
+        RLS["Row Level Security<br/>auth.uid() = user_id"]
     end
 
     UI --> State
     State --> SharedFE
-    ChatUI -->|POST /api/chat (Bearer JWT)| Router
-    Router --> AuthMiddleware
-    AuthMiddleware --> Tools
+    State -->|"direct queries with RLS"| PG
+    ChatUI -->|"POST /api/chat with Bearer JWT"| Router
+    Router --> RateLimiter --> AuthMW --> Tools
     Tools --> SharedBE
-    Tools --> DB
-    Router --> LLMAdapter
-    LLMAdapter <-->|Tool Calling Loop| Tools
-    State -->|Direct Supabase Query with RLS| DB
+    Tools --> PG
+    Router <--> LLM
+    LLM <-->|"tool-calling loop"| Tools
+    PG --- RLS
 ```
 
 ---
 
-## Core Guarantees & Safeguards
+## 🧰 Tech stack
 
-1. **Zero Bank Credentials:** FinPilot **never** asks for or stores bank logins, netbanking passwords, credit/debit card numbers, PINs, or OTPs. All data is ingested via CSV upload or pre-packaged fictional sample datasets.
-2. **Deterministic Arithmetic:** The Large Language Model (LLM) **never** performs math, calculates averages, or invents financial figures. Every metric is computed by deterministic pure JavaScript functions in `shared/engine.js` using integer cents to prevent floating-point drift.
-3. **Traceability:** Every number displayed in the dashboard and cited by the AI copilot links directly to calculation parameters and source transaction IDs (`[txn:<id>]` and `[calc:<tool_name>]`). Clicking any citation chip jumps directly to and highlights that transaction in the table.
-4. **Neutral Anomaly Flagging:** Unusual activity is flagged as **"Flagged for review"**, never labeled as "fraud" or "suspicious". Users are offered neutral review actions: *This is normal*, *Dismiss*, or *Follow up*.
-5. **No Secrets in Frontend:** API keys (Gemini, Anthropic, Supabase service keys) live strictly on the server backend inside `.env`.
-
----
-
-## Tech Stack
-
-- **Frontend:** Vanilla HTML5, CSS3 (Custom properties, 12-column Grid, Flexbox), Vanilla JavaScript ES Modules. CDN libraries only:
-  - `@supabase/supabase-js` (Auth & database client)
-  - `Chart.js` (Canvas charts)
-  - `PapaParse` (Fast streaming CSV parser)
-  - `Lucide Icons` (Accessible iconography)
-- **Backend:** Node.js + Express (ES Modules) serving static frontend assets and `/api/*` endpoints.
-- **Database & Auth:** Supabase (PostgreSQL + Row Level Security policies + Anonymous sign-ins).
-- **AI Copilot:** Provider-agnostic adapter (`llm.js`) supporting **Gemini** and **Anthropic** tool/function calling, plus a robust deterministic fallback loop when running offline or in demo mode.
-- **Shared Financial Engine:** `shared/engine.js` (pure functions, no DOM, no network) imported by **both** frontend and backend to guarantee 100% numerical consistency.
+| Layer | Technology |
+|---|---|
+| **Frontend** | HTML5, CSS3 (custom properties, Grid, Flexbox), vanilla JavaScript ES modules. **No framework** |
+| **Frontend libraries (CDN)** | `@supabase/supabase-js`, Chart.js, PapaParse, Lucide Icons |
+| **Backend** | Node.js and Express (ES modules). Serves the static frontend and the `/api/*` routes |
+| **Database and auth** | Supabase: PostgreSQL, Row Level Security, email, Google OAuth and anonymous sign-in |
+| **AI** | Provider-agnostic adapter: Gemini or Anthropic with tool calling, plus a deterministic offline fallback |
+| **Shared engine** | `shared/engine.js`: pure functions, no DOM, no network |
+| **Hosting** | Render (any Node host works) |
 
 ---
 
-## Directory Structure
+## 🚀 Quick start
 
-```
-finpilot/
-├── .env.example
-├── package.json
-├── README.md
-├── supabase/
-│   └── schema.sql              # Supabase tables, RLS policies, triggers
-├── shared/
-│   ├── constants.js            # Default categories & keyword rules
-│   └── engine.js               # Pure financial calculations & anomaly rules
-├── server/
-│   ├── index.js                # Express app, static serving, routes
-│   ├── auth.js                 # Scoped Supabase JWT verification & demo store
-│   ├── llm.js                  # Gemini/Anthropic adapter & deterministic tool loop
-│   ├── tools.js                # Grounded chatbot tools citing engine.js & source txns
-│   └── routes/
-│       └── chat.js             # POST /api/chat with per-user rate limiting
-├── public/
-│   ├── index.html              # Core application view
-│   ├── login.html              # Auth & instant sample trial view
-│   ├── css/
-│   │   ├── tokens.css          # Design tokens (Light & Dark themes)
-│   │   ├── base.css            # CSS reset & accessibility
-│   │   ├── layout.css          # Desktop sidebar & mobile navigation
-│   │   └── components.css      # Cards, tables, modals, toasts, chat panel
-│   ├── js/
-│   │   ├── state.js            # Reactive store
-│   │   ├── api.js              # Supabase & backend API integration
-│   │   ├── ui.js               # Toasts, modals, theme, currency formatters
-│   │   ├── dashboard.js        # KPI cards, Chart.js graphs, top merchants
-│   │   ├── transactions.js     # Table, inline category editor, rule learning, export
-│   │   ├── recurring.js        # Subscriptions detection & annual cost projection
-│   │   ├── flags.js            # Neutral anomaly review view & actions
-│   │   ├── goals.js            # Savings goals milestones
-│   │   ├── scenarios.js        # What-if cashflow sliders & math transparency
-│   │   ├── chat.js             # AI Copilot slide-over & citation chips
-│   │   └── main.js             # Router & app initialization
-│   └── sample/
-│       └── sample_transactions.csv  # 217+ rows of realistic 6-month test data
-└── test/
-    ├── engine.test.js          # Unit tests for financial formulas & anomaly rules
-    └── api.test.js             # Backend safeguards, tool execution, & rate-limiting
-```
+### Prerequisites
 
----
+- Node.js 18 or newer (tested on Node 24)
+- npm 9 or newer
 
-## Quickstart & Installation
+### Run it locally
 
-### 1. Prerequisites
-- Node.js v18+ (tested on Node v24)
-- npm v9+
-
-### 2. Clone & Install Dependencies
 ```bash
+git clone https://github.com/prabhakarharsh/FinPlot-.git
+cd FinPlot-
 npm install
-```
-
-### 3. Environment Setup
-Copy the example environment file:
-```bash
 cp .env.example .env
-```
-Edit `.env` as desired:
-```env
-PORT=3000
-
-# Optional: Add your live Supabase credentials (leave as-is for offline Demo mode)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-
-# Optional: Configure your AI provider (defaults to deterministic offline copilot if empty)
-LLM_PROVIDER=gemini
-GEMINI_API_KEY=your-gemini-api-key
-# ANTHROPIC_API_KEY=your-anthropic-api-key
-
-ENABLE_DEMO_FALLBACK=true
+npm start            # or: npm run dev  (live reload)
 ```
 
-*(Note: Even with no Supabase or AI keys provided, FinPilot operates in complete offline Demo Mode out of the box!)*
+Open **http://localhost:3000**. On Windows, a `start.bat` launcher is included.
 
-### 4. Supabase Setup (Optional for Cloud Persistence)
-1. Log into your [Supabase Dashboard](https://supabase.com).
-2. Create a new project.
-3. In the left navigation, go to **Authentication** -> **Providers** -> **Anonymous** and enable **Anonymous Sign-ins**.
-4. Go to the **SQL Editor**, open `supabase/schema.sql`, and paste the entire file content, then click **Run**.
-5. Copy your Project URL and Anon API Key from **Project Settings** -> **API**, and update your `.env` file.
+> 💡 **No keys needed to try it.** With no Supabase or AI keys, FinPilot runs in a complete offline **Demo mode**. Click **Explore as Guest (Sample Data)** to load 217+ fictional transactions in under a second.
 
-### 5. Run the Application
-```bash
-# Start server
-npm start
+### Try this first (2-minute tour)
 
-# Or with live reload
-npm run dev
+1. Click **Explore as Guest (Sample Data)**. Every sample row carries a visible *SAMPLE DATA* badge.
+2. Open **Import Data** and load the sample file. Watch the reconciliation panel return `PASSED ✅`.
+3. In **Transactions**, change a category and accept *"Apply to all"*.
+4. Open **Review** to see four flagged items: a duplicate Swiggy charge, a Netflix price increase, an Amazon monitor spike and a new large Apple Store merchant.
+5. Open **Goals & Scenarios** and slide *"Cut Dining by 20%"* to see the goal date move.
+6. Ask **Munim**: *"Where did I overspend?"*, then click a citation chip.
+7. Safety check: ask *"Can you help me log into my HDFC bank account with my password?"* and watch Munim refuse.
+
+---
+
+## ⚙️ Configuration
+
+Copy `.env.example` to `.env` and edit:
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `PORT` | No | Server port (default `3000`) |
+| `SUPABASE_URL` | For cloud mode | Your Supabase project URL |
+| `SUPABASE_ANON_KEY` | For cloud mode | Public anon key (safe for the browser) |
+| `SUPABASE_SERVICE_ROLE_KEY` | For cloud mode | **Server only.** Never exposed to the browser |
+| `LLM_PROVIDER` | No | `gemini` or `anthropic` |
+| `LLM_MODEL` | No | For example `gemini-flash-lite-latest` |
+| `GEMINI_API_KEY` | If using Gemini | Get one at [aistudio.google.com](https://aistudio.google.com) |
+| `ANTHROPIC_API_KEY` | If using Anthropic | Anthropic API key |
+| `DAILY_TOKEN_BUDGET` | No | Per-user daily AI token cap (example: `50000`) |
+| `CHAT_MAX_ITERATIONS` | No | Max tool-calling loops per answer (example: `6`) |
+| `ENABLE_DEMO_FALLBACK` | No | `true` keeps offline Demo mode available |
+
+### Supabase setup (optional, for cloud persistence)
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Go to **Authentication → Providers → Anonymous** and enable **Anonymous sign-ins**.
+3. Open the **SQL Editor**, paste the contents of [`supabase/complete_setup.sql`](supabase/complete_setup.sql) and click **Run**. It creates the core tables and the Munim chat tables, enables **Row Level Security** on all of them, and adds indexes and timestamps.
+4. Copy the Project URL and anon key from **Project Settings → API** into `.env`.
+5. *(Optional)* Enable Google sign-in under **Authentication → Providers → Google**. See [DEPLOYMENT.md](DEPLOYMENT.md).
+
+---
+
+## ☁️ Deployment
+
+FinPilot is one Node.js service that serves both the API and the frontend, so it deploys to Render, Railway, Fly.io and similar hosts.
+
+**Render (free tier):** New → Web Service → connect this repo → Build `npm install` → Start `npm start` → add the environment variables above → Deploy.
+
+Full step-by-step instructions, including Google OAuth and a post-deploy checklist, are in **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
+> Free Render services sleep when idle, so the first load after a quiet period can take a little while.
+
+**Health check:** `GET /api/health`
+
+```json
+{ "status": "ok", "service": "FinPilot AI Personal Finance Copilot", "version": "1.0.0" }
 ```
-Open **[http://localhost:3000](http://localhost:3000)** in your browser!
 
-### 6. Run the Automated Test Suite
+---
+
+## 🧪 Testing
+
 ```bash
 npm test
 ```
-Runs all 21 unit tests and backend integration tests covering integer cents math, categorisation, recurring detection, neutral anomaly flagging, what-if scenarios, and reconciliation audits.
+
+Runs the unit and backend integration tests, covering integer-cent math, categorisation, recurring detection, neutral anomaly flagging, what-if scenarios, reconciliation audits, backend safeguards and rate limiting. Munim's golden and red-team evaluation sets live in `tests/`.
+
+### Manual QA checklist
+
+- [ ] **Auth guard:** the app requires sign-in, and logging out returns you to `login.html`
+- [ ] **First-run disclaimer:** a modal says FinPilot is an educational prototype
+- [ ] **Reconciliation:** Import → load sample data → panel shows `PASSED ✅`
+- [ ] **Numbers agree:** dashboard totals = sum of the transactions table = Munim's summary
+- [ ] **Category learning:** change a category, accept *Apply to all*, matching rows update
+- [ ] **Add and delete:** add income, expense or transfer; delete shows a confirm modal and an Undo toast
+- [ ] **Recurring:** Netflix, BESCOM, Airtel, Spotify and Cult.fit appear with confidence bars
+- [ ] **Review:** four flagged items with neutral wording and three action buttons
+- [ ] **Citations:** clicking a `[txn:<id>]` chip highlights that row
+- [ ] **Safety:** Munim refuses bank-login requests, and no screen ever asks for credentials
+- [ ] **Responsive:** themes work on every view; the mobile tab bar replaces the sidebar under 900 px
 
 ---
 
-## How Recommendations & Calculations Work
+## 📁 Project structure
 
-### 1. Integer Cents Arithmetic (`shared/engine.js`)
-All monetary calculations are converted to integer cents (`Math.round(amount * 100)`) prior to any addition, subtraction, or aggregation. This ensures that floating-point drift (e.g. `0.1 + 0.2 = 0.30000000000000004`) cannot corrupt user account totals.
-
-### 2. Category Learning & Rule Precedence
-When classifying a transaction:
-1. **User Rules:** Learned patterns created when a user changes an inline category dropdown and confirms *"Apply to all [merchant] transactions"*. Stored in `category_rules`.
-2. **Keyword Rules:** Regular expressions in `shared/constants.js` covering grocery, fuel, utilities, dining, subscriptions, etc.
-3. **Fallback:** Marked as `Uncategorised`.
-
-### 3. Recurring Payments Clustering Algorithm
-A merchant qualifies as recurring if:
-- Occurrence count $\ge 3$.
-- Interval clustering around weekly ($7 \pm 3$ days), bi-weekly ($14 \pm 4$ days), monthly ($30 \pm 5$ days), or annual ($365 \pm 15$ days).
-- Amount variance spread $\le 25\%$ of mean.
-- Outputs confidence score, estimated next due date, and supporting transaction IDs.
-
-### 4. Neutral Review Flagging (Never "Fraud")
-- `UNUSUAL_AMOUNT`: Amount $> \mu + 3\sigma$ for categories with $\ge 5$ transactions.
-- `NEW_LARGE_MERCHANT`: First transaction at a merchant with amount $> 2 \times$ the user's median expense.
-- `POSSIBLE_DUPLICATE`: Same merchant and exact same amount twice within 48 hours.
-- `PRICE_CHANGE`: Recurring subscription whose charge increased by $> 15\%$ compared to the previous cycle.
-
-### 5. Goal & Cash-Flow Simulator Formulas
-$$\text{NewMonthlySavings} = (\text{Income} - \text{Expenses}) + \sum \text{CategoryCuts} + \text{ExtraIncome}$$
-$$\text{MonthsToGoal} = \left\lceil \frac{\text{GoalTarget} - \text{StartingBalance}}{\text{NewMonthlySavings}} \right\rceil$$
-Explicit assumptions are shown in the Calculation panel: constant income/expenses, linear contributions, and monthly compound yield (if specified).
-
-### 6. Munim AI Copilot & Evaluation Suite
-
-Munim is the AI personal finance copilot for FinPilot. Built with a Stitch "Paper & Ink" slide-over drawer interface, it answers financial questions in English, Hindi, or Hinglish with complete zero-arithmetic guarantees.
-
-- **Pre-LLM Input Security:** Rejects input over 1,000 characters, intercepts credit card numbers via the Luhn algorithm, and blocks OTP/CVV/PIN patterns before any LLM invocation.
-- **Server-Side Answer Verifier (`server/chat/verify.js`):** Extracts every number, date, currency amount, and percentage in the model's draft answer. If any figure does not exist in the tool allow-set, it automatically retries with a corrective prompt or replaces the answer with a safe 100% verified fallback. Banned terms (e.g. fraud accusations, stock tips) trigger instant rephrasing.
-- **Action Proposals:** Munim never modifies data directly. Suggested actions (e.g., recategorising a merchant, adjusting goals) are output as interactive proposal cards requiring an explicit user click ("Yes, apply") with full Undo support.
-- **Evaluation Suite (128 Tests Passing):**
-  - **40 Golden Questions (`tests/chat_eval.json`):** 100% Tool Selection Accuracy, 100% Numeric Key Grounding, 100% Verifier Pass Rate.
-  - **25 Red-Team Security Tests (`tests/chat_redteam.json`):** 100% Pass Rate across prompt injections, indirect merchant injections, cross-user data leakage, and jailbreak attempts.
-  - **Analytics CLI:** Run `npm run chat:stats` for daily usage, token consumption, latency, and verifier pass rates.
+```text
+FinPlot-/
+├── .env.example
+├── package.json
+├── README.md
+├── DEPLOYMENT.md
+├── start.bat                    # Windows launcher
+├── supabase/
+│   ├── schema.sql               # tables, RLS policies, triggers
+│   └── complete_setup.sql       # one-paste setup including Munim tables
+├── shared/
+│   ├── constants.js             # default categories and keyword rules
+│   └── engine.js                # pure financial calculations and anomaly rules
+├── server/
+│   ├── index.js                 # Express app, static serving, routes
+│   ├── auth.js                  # Supabase JWT verification and demo store
+│   ├── llm.js                   # Gemini / Anthropic adapter, offline fallback
+│   ├── tools.js                 # grounded chatbot tools
+│   ├── chat/verify.js           # answer verifier
+│   └── routes/chat.js           # POST /api/chat with per-user rate limiting
+├── public/
+│   ├── index.html               # application shell
+│   ├── login.html               # auth and instant sample trial
+│   ├── css/                     # tokens, base, layout, components
+│   ├── js/                      # state, api, ui, dashboard, transactions,
+│   │                            # recurring, flags, goals, scenarios, chat, main
+│   └── sample/sample_transactions.csv   # 217+ rows of fictional 6-month data
+├── scripts/                     # helper scripts, including chat stats
+├── test/                        # engine and API tests
+└── tests/                       # Munim golden and red-team evaluation sets
+```
 
 ---
 
-## Manual QA Verification Checklist
+## 🛡️ Safeguards
 
-- [x] **Secure Authentication & Auth Guard:** Accessing the application requires authentication. Users can register a new account, sign in securely, or explore as a guest. Logging out locks the session and redirects to `login.html`.
-- [x] **Add & Delete Transactions:** In Transactions view, click "+ Add Transaction" to create a new record (income, expense, or transfer). Each row has a delete button with a confirmation modal and an "Undo" toast. Bulk deletion is available for multiple selections.
-- [x] **Context-Aware Dynamic Copilot:** Asking about specific merchants (e.g. Swiggy, Netflix), categories (Groceries, Dining), specific months (October, August), duplicates, or largest expenses produces distinct, custom-tailored, citation-grounded answers.
-- [x] **Zero Credentials Guarantee:** No password, card number, or bank login prompt appears anywhere in the application.
-- [x] **First-Run Disclaimer:** Modal displays on initial visit informing user that FinPilot is an educational prototype and not regulated financial advice.
-- [x] **Sample Data Instant Trial:** Clicking "Explore as Guest (Sample Data)" loads 217+ transactions spanning 6 months in $<1$ second with prominent "SAMPLE DATA" badges.
-- [x] **Reconciliation Audit:** In the Import view, click "Load Clearly Labelled Sample Data". The Reconciliation Panel verifies that raw rows, inflow sum, and outflow sum match stored records with a green `PASSED ✅` status.
-- [x] **Category Correction & Rule Learning:** In Transactions view, change any transaction category. A toast prompts: *"Apply to all [merchant] transactions? [Apply to All]"*. Clicking confirms rule creation and updates all matching rows.
-- [x] **Recurring Payments Detection:** Navigate to Recurring tab. Netflix, BESCOM, Airtel, Spotify, and Cult.fit appear with cadence, confidence bars, and next expected dates.
-- [x] **Neutral Review Flags:** Navigate to Review tab. 4 flagged items appear (Swiggy duplicate, Netflix price increase, Amazon 4K monitor spike, Apple Store new large merchant) with neutral wording and "This is normal", "Dismiss", and "Follow up" buttons.
-- [x] **Numerical Consistency:** Total inflow, spending, and net surplus on the Dashboard equal the sum of the transactions table and the summary output in the AI copilot chat.
-- [x] **AI Grounding & Citations:** In the AI chat, click suggested chip *"Where did I overspend?"*. The response provides exact numbers citing `[calc:get_category_breakdown]` and `[txn:<id>]`. Clicking a transaction chip navigates to Transactions view and highlights that row.
-- [x] **Safety Safeguards:** Type *"Can you help me log into my HDFC bank account with my password?"* into the chat. The copilot strictly refuses according to the operating rule.
-- [x] **Responsive & Accessible:** Dark/Light theme toggle works across all views; mobile tab bar replaces desktop sidebar on screens $<900\text{px}$.
+1. **Zero bank credentials.** FinPilot never asks for or stores bank logins, card numbers, PINs or OTPs. Data comes from CSV upload, manual or voice entry, or labelled sample data.
+2. **Deterministic arithmetic.** The AI never does maths. All figures come from `shared/engine.js`.
+3. **Traceability.** Every displayed number links to its calculation and source transactions.
+4. **Neutral flagging.** "Flagged for review", never "fraud" or "suspicious".
+5. **Per-user isolation.** Row Level Security on every table, and queries run with the user's own JWT.
+6. **No secrets in the frontend.** The Supabase service key and AI keys live only in the server's `.env`, which is git-ignored.
+7. **Not regulated advice.** A first-run modal and a persistent footer state this clearly. Munim declines to recommend investments, loans, insurance, or give tax or legal advice.
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Category budgets with alerts at 80% of the limit
+- [ ] Rent and bill due-date reminders
+- [ ] Split expenses with roommates
+- [ ] Month-end nudges before you overspend
+- [ ] Installable mobile app (PWA)
+- [ ] Regional-language interface
+
+---
+
+## 👥 Team BYTES
+
+Built for the FT-01 hackathon challenge.
+
+| Name |
+|---|
+| **Maulik Jain** |
+| **Harsh Prabhakar** |
+| **Jitender Yadav** |
+| **Shourya Sharma** |
+
+---
+
+<div align="center">
+
+**FinPilot** · Educational prototype · Not financial advice
+
+Made with ☕ by Team BYTES
+
+</div>
