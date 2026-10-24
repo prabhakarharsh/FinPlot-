@@ -1,0 +1,24 @@
+{
+  "name": "finpilot",
+  "version": "1.0.0",
+  "description": "FinPilot - AI-Powered Personal Finance Copilot Prototype",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/*.test.js",
+    "chat:stats": "node scripts/chat_stats.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "firebase": "^13.1.0",
+    "zod": "^4.6.7"
+  }
+}

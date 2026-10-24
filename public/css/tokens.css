@@ -1,0 +1,107 @@
+/* public/css/tokens.css */
+/* Design Tokens: Dark & Light theme, typography, spacing, elevations */
+
+:root {
+  /* Color Palette - Light Mode Default */
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-subtle: #e2e8f0;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #f8fafc;
+
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-focus: #0ea5e9;
+
+  /* Accent & Semantic */
+  --accent-primary: #0ea5e9;       /* Deep Cyan / Sky */
+  --accent-primary-hover: #0284c7;
+  --accent-teal: #14b8a6;          /* Teal accent */
+  --accent-teal-subtle: #ccfbf1;
+  --accent-income: #10b981;        /* Inflow Green */
+  --accent-income-subtle: #d1fae5;
+  --accent-review: #f59e0b;        /* Amber for Flags (Review) */
+  --accent-review-subtle: #fef3c7;
+  --accent-expense: #ef4444;       /* Soft Red for Outflow */
+  --accent-expense-subtle: #fee2e2;
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 64px;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --bg-primary: #090d16;
+  --bg-surface: #111827;
+  --bg-surface-elevated: #1f2937;
+  --bg-subtle: #374151;
+
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-inverse: #111827;
+
+  --border-subtle: #1f2937;
+  --border-strong: #374151;
+  --border-focus: #38bdf8;
+
+  --accent-primary: #38bdf8;
+  --accent-primary-hover: #0ea5e9;
+  --accent-teal: #2dd4bf;
+  --accent-teal-subtle: rgba(45, 212, 191, 0.15);
+  --accent-income: #34d399;
+  --accent-income-subtle: rgba(52, 211, 153, 0.15);
+  --accent-review: #fbbf24;
+  --accent-review-subtle: rgba(251, 191, 36, 0.15);
+  --accent-expense: #f87171;
+  --accent-expense-subtle: rgba(248, 113, 113, 0.15);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

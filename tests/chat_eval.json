@@ -1,0 +1,282 @@
+[
+  {
+    "id": "q01",
+    "prompt": "What is my total spending all time?",
+    "expected_tool": "get_summary",
+    "category": "totals",
+    "key_checks": ["total_spent"]
+  },
+  {
+    "id": "q02",
+    "prompt": "How much income have I earned overall?",
+    "expected_tool": "get_summary",
+    "category": "totals",
+    "key_checks": ["total_income"]
+  },
+  {
+    "id": "q03",
+    "prompt": "What is my overall savings rate?",
+    "expected_tool": "get_summary",
+    "category": "totals",
+    "key_checks": ["savings_rate"]
+  },
+  {
+    "id": "q04",
+    "prompt": "What is my net cash flow?",
+    "expected_tool": "get_summary",
+    "category": "totals",
+    "key_checks": ["net_savings"]
+  },
+  {
+    "id": "q05",
+    "prompt": "how much did I spend",
+    "expected_tool": "get_summary",
+    "category": "ambiguous",
+    "key_checks": ["total_spent"]
+  },
+  {
+    "id": "q06",
+    "prompt": "Show my category breakdown",
+    "expected_tool": "get_category_breakdown",
+    "category": "category_breakdown",
+    "key_checks": ["top_category"]
+  },
+  {
+    "id": "q07",
+    "prompt": "How much did I spend on Dining?",
+    "expected_tool": "get_category_breakdown",
+    "category": "category_breakdown",
+    "key_checks": ["Dining"]
+  },
+  {
+    "id": "q08",
+    "prompt": "What are my top spending categories?",
+    "expected_tool": "get_category_breakdown",
+    "category": "category_breakdown",
+    "key_checks": ["top_category"]
+  },
+  {
+    "id": "q09",
+    "prompt": "Compare my spending between August and September 2026",
+    "expected_tool": "compare_periods",
+    "category": "period_comparison",
+    "key_checks": ["spending_difference"]
+  },
+  {
+    "id": "q10",
+    "prompt": "Compare last month vs this month",
+    "expected_tool": "compare_periods",
+    "category": "period_comparison",
+    "key_checks": ["period_a_spending", "period_b_spending"]
+  },
+  {
+    "id": "q11",
+    "prompt": "Who is my top merchant by total spending?",
+    "expected_tool": "top_merchants",
+    "category": "top_merchants",
+    "key_checks": ["top_merchant_name", "top_merchant_amount"]
+  },
+  {
+    "id": "q12",
+    "prompt": "Where did I spend the most money?",
+    "expected_tool": "top_merchants",
+    "category": "top_merchants",
+    "key_checks": ["top_merchant_name"]
+  },
+  {
+    "id": "q13",
+    "prompt": "Show my top 5 merchants",
+    "expected_tool": "top_merchants",
+    "category": "top_merchants",
+    "key_checks": ["top_merchants"]
+  },
+  {
+    "id": "q14",
+    "prompt": "How much did I spend on Swiggy?",
+    "expected_tool": "search_transactions",
+    "category": "transaction_search",
+    "key_checks": ["matching_count"]
+  },
+  {
+    "id": "q15",
+    "prompt": "Find all payments to Netflix",
+    "expected_tool": "search_transactions",
+    "category": "transaction_search",
+    "key_checks": ["matching_count"]
+  },
+  {
+    "id": "q16",
+    "prompt": "Show transactions for Amazon",
+    "expected_tool": "search_transactions",
+    "category": "transaction_search",
+    "key_checks": ["matching_count"]
+  },
+  {
+    "id": "q17",
+    "prompt": "Search for rent payments",
+    "expected_tool": "search_transactions",
+    "category": "transaction_search",
+    "key_checks": ["matching_count"]
+  },
+  {
+    "id": "q18",
+    "prompt": "What are my recurring payments and subscriptions?",
+    "expected_tool": "list_recurring",
+    "category": "recurring_costs",
+    "key_checks": ["monthly_total_cost", "total_recurring_items"]
+  },
+  {
+    "id": "q19",
+    "prompt": "Which subscription costs the most?",
+    "expected_tool": "list_recurring",
+    "category": "recurring_costs",
+    "key_checks": ["recurring"]
+  },
+  {
+    "id": "q20",
+    "prompt": "What is my total monthly bill for subscriptions?",
+    "expected_tool": "list_recurring",
+    "category": "recurring_costs",
+    "key_checks": ["monthly_total_cost"]
+  },
+  {
+    "id": "q21",
+    "prompt": "What is my annual recurring expenditure?",
+    "expected_tool": "list_recurring",
+    "category": "recurring_costs",
+    "key_checks": ["annual_total_cost"]
+  },
+  {
+    "id": "q22",
+    "prompt": "Are there any transactions flagged for review?",
+    "expected_tool": "list_flags",
+    "category": "flags_explanation",
+    "key_checks": ["flags_count"]
+  },
+  {
+    "id": "q23",
+    "prompt": "Why was a transaction flagged?",
+    "expected_tool": "list_flags",
+    "category": "flags_explanation",
+    "key_checks": ["flags_count"]
+  },
+  {
+    "id": "q24",
+    "prompt": "Show all items under review",
+    "expected_tool": "list_flags",
+    "category": "flags_explanation",
+    "key_checks": ["flags_count"]
+  },
+  {
+    "id": "q25",
+    "prompt": "How am I progressing on my savings goals?",
+    "expected_tool": "get_goal_progress",
+    "category": "goal_progress",
+    "key_checks": ["active_goals_count"]
+  },
+  {
+    "id": "q26",
+    "prompt": "How much have I saved for my Emergency Fund?",
+    "expected_tool": "get_goal_progress",
+    "category": "goal_progress",
+    "key_checks": ["goals"]
+  },
+  {
+    "id": "q27",
+    "prompt": "What is my remaining deficit for my laptop goal?",
+    "expected_tool": "get_goal_progress",
+    "category": "goal_progress",
+    "key_checks": ["goals"]
+  },
+  {
+    "id": "q28",
+    "prompt": "Can I reach my goal sooner if I cut spending?",
+    "expected_tool": "run_scenario",
+    "category": "scenarios",
+    "key_checks": ["scenario_monthly_surplus", "months_to_goal"]
+  },
+  {
+    "id": "q29",
+    "prompt": "What if I earn an extra ₹5000 per month?",
+    "expected_tool": "run_scenario",
+    "category": "scenarios",
+    "key_checks": ["months_to_goal", "projected_completion_date"]
+  },
+  {
+    "id": "q30",
+    "prompt": "What if I cut Dining expenses by 20%?",
+    "expected_tool": "run_scenario",
+    "category": "scenarios",
+    "key_checks": ["months_to_goal"]
+  },
+  {
+    "id": "q31",
+    "prompt": "How did you calculate my savings rate?",
+    "expected_tool": "get_summary",
+    "category": "how_did_you_calculate",
+    "key_checks": ["savings_rate", "assumptions"]
+  },
+  {
+    "id": "q32",
+    "prompt": "What formula did you use for recurring expenses?",
+    "expected_tool": "list_recurring",
+    "category": "how_did_you_calculate",
+    "key_checks": ["assumptions"]
+  },
+  {
+    "id": "q33",
+    "prompt": "Mera kul kharcha kitna hua hai?",
+    "expected_tool": "get_summary",
+    "category": "hinglish",
+    "key_checks": ["total_spent"]
+  },
+  {
+    "id": "q34",
+    "prompt": "Swiggy par kitne paise kharch kiye maine?",
+    "expected_tool": "search_transactions",
+    "category": "hinglish",
+    "key_checks": ["matching_count"]
+  },
+  {
+    "id": "q35",
+    "prompt": "Sabse bada bill kiska hai?",
+    "expected_tool": "top_merchants",
+    "category": "hinglish",
+    "key_checks": ["top_merchant_name"]
+  },
+  {
+    "id": "q36",
+    "prompt": "Koi suspicious ya review wala transaction hai kya?",
+    "expected_tool": "list_flags",
+    "category": "hinglish",
+    "key_checks": ["flags_count"]
+  },
+  {
+    "id": "q37",
+    "prompt": "What is the date range of my transactions?",
+    "expected_tool": "get_data_overview",
+    "category": "data_overview",
+    "key_checks": ["date_range", "total_transactions"]
+  },
+  {
+    "id": "q38",
+    "prompt": "Do I have any cryptocurrency or Bitcoin transactions?",
+    "expected_tool": "search_transactions",
+    "category": "data_non_existent",
+    "key_checks": ["total_matching"]
+  },
+  {
+    "id": "q39",
+    "prompt": "Show transactions for Starbucks",
+    "expected_tool": "search_transactions",
+    "category": "data_non_existent",
+    "key_checks": ["total_matching"]
+  },
+  {
+    "id": "q40",
+    "prompt": "Propose changing Swiggy category to Dining",
+    "expected_tool": "propose_action",
+    "category": "proposals",
+    "key_checks": ["proposal_summary"]
+  }
+]

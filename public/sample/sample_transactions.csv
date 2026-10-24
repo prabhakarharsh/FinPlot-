@@ -1,0 +1,218 @@
+Date,Description,Merchant,Amount,Category
+2026-05-01,Tech Corp Monthly Payroll,Tech Corp,115000.00,Salary
+2026-05-02,Prestige Society Monthly Rent,Prestige Apartments,-28000.00,Rent/Housing
+2026-05-03,BigBasket Supermarket Order #8821,BigBasket,-3450.00,Groceries
+2026-05-04,Shell Petrol Fuel Bangalore,Shell,-2200.00,Transport
+2026-05-05,BESCOM Electricity Bill May,BESCOM,-2450.00,Utilities
+2026-05-06,Swiggy Lunch Bowl delivery,Swiggy,-380.00,Dining
+2026-05-07,Uber Ride to Whitefield office,Uber,-420.00,Transport
+2026-05-08,Apollo Pharmacy Medicines,Apollo Pharmacy,-890.00,Health
+2026-05-09,Amazon Prime essentials household,Amazon,-1450.00,Shopping
+2026-05-10,Cult.fit Monthly Membership,Cult.fit,-1750.00,Health
+2026-05-11,Starbucks Coffee Indiranagar,Starbucks,-650.00,Dining
+2026-05-12,Airtel Fiber Broadband Bill,Airtel,-1179.00,Utilities
+2026-05-13,Zomato Dinner Order,Zomato,-540.00,Dining
+2026-05-14,Blinkit Instant Grocery,Blinkit,-820.00,Groceries
+2026-05-15,Netflix Standard HD Monthly,Netflix,-649.00,Subscriptions
+2026-05-16,Spotify Individual Premium,Spotify,-119.00,Subscriptions
+2026-05-17,BookMyShow PVR Forum Cinema,BookMyShow,-840.00,Entertainment
+2026-05-18,Uber Ride to meeting,Uber,-380.00,Transport
+2026-05-19,BigBasket Fresh Vegetables,BigBasket,-1650.00,Groceries
+2026-05-20,Self Transfer to Emergency Fund,Self Savings,-15000.00,Transfers
+2026-05-21,McDonalds Family Meal,McDonalds,-780.00,Dining
+2026-05-22,Shell Petrol Pump Fill,Shell,-2100.00,Transport
+2026-05-23,Zepto 10 min Delivery,Zepto,-460.00,Groceries
+2026-05-24,Amazon Books and Stationeries,Amazon,-1250.00,Shopping
+2026-05-25,Swiggy Biryani Treat,Swiggy,-620.00,Dining
+2026-05-26,H&M Casual Apparels,H&M,-2990.00,Shopping
+2026-05-27,Uber Ride Koramangala,Uber,-490.00,Transport
+2026-05-28,Nature's Basket Organic,Nature's Basket,-1980.00,Groceries
+2026-05-29,Zomato Weekend Lunch,Zomato,-720.00,Dining
+2026-05-30,Mutual Fund SIP Inflow Refund,Other Income,3500.00,Other Income
+2026-05-31,Subway Wrap Combo,Subway,-340.00,Dining
+2026-06-01,Tech Corp Monthly Payroll,Tech Corp,115000.00,Salary
+2026-06-02,Prestige Society Monthly Rent,Prestige Apartments,-28000.00,Rent/Housing
+2026-06-03,BigBasket Monthly Pantry Grocery,BigBasket,-3680.00,Groceries
+2026-06-04,Shell Petrol Fuel,Shell,-2250.00,Transport
+2026-06-05,BESCOM Electricity Bill June,BESCOM,-2680.00,Utilities
+2026-06-06,Swiggy Lunch Order,Swiggy,-390.00,Dining
+2026-06-07,Uber Airport Cab,Uber,-950.00,Transport
+2026-06-08,MedPlus Pharmacy,MedPlus,-620.00,Health
+2026-06-09,Amazon Wireless Mouse and Cable,Amazon,-1850.00,Shopping
+2026-06-10,Cult.fit Monthly Membership,Cult.fit,-1750.00,Health
+2026-06-11,Starbucks Frappuccino,Starbucks,-580.00,Dining
+2026-06-12,Airtel Fiber Broadband Bill,Airtel,-1179.00,Utilities
+2026-06-13,Zomato Pizza Order,Zomato,-850.00,Dining
+2026-06-14,Blinkit Express Grocery,Blinkit,-940.00,Groceries
+2026-06-15,Netflix Standard HD Monthly,Netflix,-649.00,Subscriptions
+2026-06-16,Spotify Individual Premium,Spotify,-119.00,Subscriptions
+2026-06-17,BookMyShow IMAX Movie Tickets,BookMyShow,-1120.00,Entertainment
+2026-06-18,Uber Ride to Client site,Uber,-460.00,Transport
+2026-06-19,BigBasket Weekly Restock,BigBasket,-2100.00,Groceries
+2026-06-20,Self Transfer to Savings Account,Self Savings,-15000.00,Transfers
+2026-06-21,Star Health Insurance Semi-Annual Premium,Star Health,-12500.00,Insurance
+2026-06-22,Shell Petrol Pump,Shell,-2150.00,Transport
+2026-06-23,Zepto Groceries and snacks,Zepto,-510.00,Groceries
+2026-06-24,Amazon Home Organizers,Amazon,-2200.00,Shopping
+2026-06-25,Swiggy Gourmet Dinner,Swiggy,-980.00,Dining
+2026-06-26,Zara Cotton T-Shirts,Zara,-3500.00,Shopping
+2026-06-27,Uber Ride to Mall,Uber,-320.00,Transport
+2026-06-28,BigBasket Fresh Fruits,BigBasket,-1420.00,Groceries
+2026-06-29,Zomato Breakfast Delivery,Zomato,-360.00,Dining
+2026-06-30,Quarterly Bank Savings Interest Credit,Other Income,2850.00,Other Income
+2026-07-01,Tech Corp Monthly Payroll,Tech Corp,115000.00,Salary
+2026-07-02,Prestige Society Monthly Rent,Prestige Apartments,-28000.00,Rent/Housing
+2026-07-03,BigBasket Monthly Staples,BigBasket,-3850.00,Groceries
+2026-07-04,Shell Petrol Fuel,Shell,-2300.00,Transport
+2026-07-05,BESCOM Electricity Bill July,BESCOM,-2520.00,Utilities
+2026-07-06,Swiggy Office Lunch,Swiggy,-420.00,Dining
+2026-07-07,Uber City Cab,Uber,-410.00,Transport
+2026-07-08,Apollo Health Check and Blood test,Apollo Pharmacy,-1650.00,Health
+2026-07-09,Amazon Kitchen Utensils,Amazon,-2400.00,Shopping
+2026-07-10,Cult.fit Monthly Membership,Cult.fit,-1750.00,Health
+2026-07-11,Third Wave Coffee Roasters,Dining,-550.00,Dining
+2026-07-12,Airtel Fiber Broadband Bill,Airtel,-1179.00,Utilities
+2026-07-13,Zomato South Indian Meals,Zomato,-480.00,Dining
+2026-07-14,Swiggy Lunch Biryani (Charge 1),Swiggy,-480.00,Dining
+2026-07-14,Swiggy Lunch Biryani (Charge 2 - Planted Duplicate),Swiggy,-480.00,Dining
+2026-07-15,Netflix Standard HD Monthly,Netflix,-649.00,Subscriptions
+2026-07-16,Spotify Individual Premium,Spotify,-119.00,Subscriptions
+2026-07-17,Blinkit Midweek essentials,Blinkit,-740.00,Groceries
+2026-07-18,Uber Ride to Gym,Uber,-240.00,Transport
+2026-07-19,BigBasket Farm Fresh,BigBasket,-1820.00,Groceries
+2026-07-20,Self Transfer to Fixed Deposit,Self Savings,-20000.00,Transfers
+2026-07-21,Domino's Pizza Weekend,Domino,-890.00,Dining
+2026-07-22,Shell Petrol Pump Refill,Shell,-2200.00,Transport
+2026-07-23,Zepto Late night dairy,Zepto,-390.00,Groceries
+2026-07-24,Amazon Noise Cancelling Earphones,Amazon,-4200.00,Shopping
+2026-07-25,Swiggy Dessert Sundae,Swiggy,-350.00,Dining
+2026-07-26,Uniqlo Linen Shirt,Shopping,-2990.00,Shopping
+2026-07-27,Uber Commute to Meeting,Uber,-390.00,Transport
+2026-07-28,BigBasket Vegetables,BigBasket,-1350.00,Groceries
+2026-07-29,Zomato Chinese dinner,Zomato,-680.00,Dining
+2026-07-30,Company Performance Bonus,Tech Corp,25000.00,Salary
+2026-07-31,Costa Coffee and Sandwich,Starbucks,-490.00,Dining
+2026-08-01,Tech Corp Monthly Payroll,Tech Corp,115000.00,Salary
+2026-08-02,Prestige Society Monthly Rent,Prestige Apartments,-28000.00,Rent/Housing
+2026-08-03,BigBasket Monthly Staples,BigBasket,-3550.00,Groceries
+2026-08-04,Shell Petrol Fuel,Shell,-2280.00,Transport
+2026-08-05,BESCOM Electricity Bill August,BESCOM,-2750.00,Utilities
+2026-08-06,Swiggy Lunch Order,Swiggy,-410.00,Dining
+2026-08-07,Uber Cab to Indiranagar,Uber,-460.00,Transport
+2026-08-08,Apollo Pharmacy Vitamins,Apollo Pharmacy,-1150.00,Health
+2026-08-09,Amazon Desk Lamp and Organizer,Amazon,-1650.00,Shopping
+2026-08-10,Cult.fit Monthly Membership,Cult.fit,-1750.00,Health
+2026-08-11,Starbucks Cold Brew,Starbucks,-520.00,Dining
+2026-08-12,Airtel Fiber Broadband Bill,Airtel,-1179.00,Utilities
+2026-08-13,Zomato Healthy Salads,Zomato,-580.00,Dining
+2026-08-14,Blinkit Organic Milk and Eggs,Blinkit,-690.00,Groceries
+2026-08-15,Netflix 4K Ultra Premium (Planted Price Increase),Netflix,-799.00,Subscriptions
+2026-08-16,Spotify Individual Premium,Spotify,-119.00,Subscriptions
+2026-08-17,BookMyShow Play Tickets,BookMyShow,-1400.00,Entertainment
+2026-08-18,Uber Ride to HSR Layout,Uber,-380.00,Transport
+2026-08-19,BigBasket Fresh Fruits and Berries,BigBasket,-2150.00,Groceries
+2026-08-20,Amazon Professional 4K Monitor (Planted Large Amount),Amazon,-48500.00,Shopping
+2026-08-21,Burger King Lunch,Burger King,-420.00,Dining
+2026-08-22,Shell Petrol Pump,Shell,-2150.00,Transport
+2026-08-23,Zepto Midnight Snacks,Zepto,-430.00,Groceries
+2026-08-24,Amazon Ergonomic Footrest,Amazon,-1490.00,Shopping
+2026-08-25,Swiggy Italian Pasta Dinner,Swiggy,-790.00,Dining
+2026-08-26,Myntra Sneakers,Myntra,-3800.00,Shopping
+2026-08-27,Uber Ride to Airport,Uber,-1100.00,Transport
+2026-08-28,BigBasket Vegetables and Spices,BigBasket,-1540.00,Groceries
+2026-08-29,Zomato Weekend Treat,Zomato,-920.00,Dining
+2026-08-30,Travel Air India Flight Booking,Air India,-7850.00,Travel
+2026-08-31,Blue Tokai Coffee,Dining,-450.00,Dining
+2026-09-01,Tech Corp Monthly Payroll,Tech Corp,115000.00,Salary
+2026-09-02,Prestige Society Monthly Rent,Prestige Apartments,-28000.00,Rent/Housing
+2026-09-03,BigBasket Monthly Pantry Grocery,BigBasket,-3920.00,Groceries
+2026-09-04,Shell Petrol Fuel,Shell,-2320.00,Transport
+2026-09-05,Apple Store BKC iPhone Purchase (Planted New Large Merchant),Apple Store,-89000.00,Shopping
+2026-09-06,BESCOM Electricity Bill September,BESCOM,-2610.00,Utilities
+2026-09-07,Swiggy Executive Lunch,Swiggy,-440.00,Dining
+2026-09-08,Uber Work Commute,Uber,-390.00,Transport
+2026-09-09,Apollo Clinic Consultation and prescription,Apollo Pharmacy,-1850.00,Health
+2026-09-10,Cult.fit Monthly Membership,Cult.fit,-1750.00,Health
+2026-09-11,Starbucks Cappuccino and Muffin,Starbucks,-620.00,Dining
+2026-09-12,Airtel Fiber Broadband Bill,Airtel,-1179.00,Utilities
+2026-09-13,Zomato Dinner with Friends,Zomato,-1450.00,Dining
+2026-09-14,Blinkit Weekly Bakery,Blinkit,-780.00,Groceries
+2026-09-15,Netflix 4K Ultra Premium Monthly,Netflix,-799.00,Subscriptions
+2026-09-16,Spotify Individual Premium,Spotify,-119.00,Subscriptions
+2026-09-17,BookMyShow Concert Passes,BookMyShow,-2500.00,Entertainment
+2026-09-18,Uber Ride to Tech Park,Uber,-430.00,Transport
+2026-09-19,BigBasket Fresh Pantry,BigBasket,-1980.00,Groceries
+2026-09-20,Self Transfer to Emergency Reserve,Self Savings,-15000.00,Transfers
+2026-09-21,Domino's Gourmet Pizza,Domino,-780.00,Dining
+2026-09-22,Shell Petrol Pump Fill,Shell,-2180.00,Transport
+2026-09-23,Zepto Grocery order,Zepto,-540.00,Groceries
+2026-09-24,Amazon Books and Stationery,Amazon,-1320.00,Shopping
+2026-09-25,Swiggy Thai Curry Dinner,Swiggy,-690.00,Dining
+2026-09-26,Decathlon Sports gear,Shopping,-3200.00,Shopping
+2026-09-27,Uber Ride to City Center,Uber,-480.00,Transport
+2026-09-28,BigBasket Vegetables,BigBasket,-1450.00,Groceries
+2026-09-29,Zomato North Indian thali,Zomato,-580.00,Dining
+2026-09-30,Quarterly Fixed Deposit Interest,Other Income,4200.00,Other Income
+2026-10-01,Tech Corp Monthly Payroll,Tech Corp,115000.00,Salary
+2026-10-02,Prestige Society Monthly Rent,Prestige Apartments,-28000.00,Rent/Housing
+2026-10-03,BigBasket Monthly Staples Restock,BigBasket,-4150.00,Groceries
+2026-10-04,Shell Petrol Fuel,Shell,-2350.00,Transport
+2026-10-05,BESCOM Electricity Bill October,BESCOM,-2580.00,Utilities
+2026-10-06,Swiggy Lunch Healthy Bowl,Swiggy,-430.00,Dining
+2026-10-07,Uber Work Ride,Uber,-410.00,Transport
+2026-10-08,Apollo Pharmacy Medicines,Apollo Pharmacy,-720.00,Health
+2026-10-09,Amazon Household Cleaners,Amazon,-1550.00,Shopping
+2026-10-10,Cult.fit Monthly Membership,Cult.fit,-1750.00,Health
+2026-10-11,Starbucks Roasted Coffee,Starbucks,-560.00,Dining
+2026-10-12,Airtel Fiber Broadband Bill,Airtel,-1179.00,Utilities
+2026-10-13,Zomato Asian Bowl,Zomato,-620.00,Dining
+2026-10-14,Blinkit Fresh Dairy and Fruit,Blinkit,-840.00,Groceries
+2026-10-15,Netflix 4K Ultra Premium Monthly,Netflix,-799.00,Subscriptions
+2026-10-16,Spotify Individual Premium,Spotify,-119.00,Subscriptions
+2026-10-17,BookMyShow PVR Gold Class,BookMyShow,-1600.00,Entertainment
+2026-10-18,Uber Ride to Airport,Uber,-1150.00,Transport
+2026-10-19,BigBasket Weekly Veggies,BigBasket,-1750.00,Groceries
+2026-10-20,Self Transfer to Savings Account,Self Savings,-15000.00,Transfers
+2026-10-21,Domino's Pizza Delivery,Domino,-690.00,Dining
+2026-10-22,Shell Petrol Pump Fill,Shell,-2200.00,Transport
+2026-10-23,Zepto Quick Essentials,Zepto,-480.00,Groceries
+2026-05-04,Blue Tokai Pour Over,Dining,-380.00,Dining
+2026-05-08,Zepto Quick Dairy,Zepto,-320.00,Groceries
+2026-05-12,Shell Fastag Toll Auto-Recharge,Shell,-500.00,Transport
+2026-05-17,Uber Ride Indiranagar to Koramangala,Uber,-320.00,Transport
+2026-05-23,Swiggy Late Night Snacks,Swiggy,-410.00,Dining
+2026-05-27,Amazon Basics Microfiber Towels,Amazon,-650.00,Shopping
+2026-06-03,Blinkit Fresh Bread and Eggs,Blinkit,-290.00,Groceries
+2026-06-08,Ola Cabs Ride to MG Road,Transport,-280.00,Transport
+2026-06-11,Third Wave Artisan Bakery,Dining,-420.00,Dining
+2026-06-16,Fastag Highway Toll deduction,Transport,-350.00,Transport
+2026-06-21,Decathlon Running Socks,Shopping,-499.00,Shopping
+2026-06-24,Zepto Quick Snacks and Soda,Zepto,-360.00,Groceries
+2026-06-28,Swiggy Evening Chaat and Snacks,Swiggy,-290.00,Dining
+2026-07-04,Starbucks Cold brew travel mug,Dining,-450.00,Dining
+2026-07-09,Shell Air and Petrol top up,Shell,-1500.00,Transport
+2026-07-12,Uber Cab to Railway Station,Uber,-520.00,Transport
+2026-07-16,Amazon Kindle E-Book purchase,Amazon,-399.00,Shopping
+2026-07-22,Blinkit Morning Dairy restock,Blinkit,-310.00,Groceries
+2026-07-27,Subway Sub of the day,Dining,-280.00,Dining
+2026-08-03,Third Wave Cold Brew Latte,Dining,-340.00,Dining
+2026-08-08,Ola Cabs Ride to Indiranagar,Transport,-290.00,Transport
+2026-08-11,Zepto Morning milk and bread,Zepto,-260.00,Groceries
+2026-08-14,Fastag Electronic Toll collection,Transport,-400.00,Transport
+2026-08-18,Swiggy Office Snacks,Swiggy,-320.00,Dining
+2026-08-22,Amazon Phone screen protector,Amazon,-499.00,Shopping
+2026-08-27,Apollo Pharmacy Hand sanitizer & masks,Apollo Pharmacy,-380.00,Health
+2026-09-02,Blue Tokai Cold Brew can,Dining,-240.00,Dining
+2026-09-07,Blinkit Fresh lemons and herbs,Blinkit,-210.00,Groceries
+2026-09-12,Uber City ride,Uber,-330.00,Transport
+2026-09-16,Zepto Evening snack,Zepto,-310.00,Groceries
+2026-09-21,Shell Petrol station quick fill,Shell,-1800.00,Transport
+2026-09-24,Swiggy Lunch salad,Swiggy,-370.00,Dining
+2026-09-28,Amazon USB-C Charging cable,Amazon,-599.00,Shopping
+2026-10-04,Third Wave Coffee Hazelnut Latte,Dining,-390.00,Dining
+2026-10-08,Fastag Toll Plaza Bangalore,Transport,-250.00,Transport
+2026-10-12,Ola Auto ride to metro,Transport,-140.00,Transport
+2026-10-15,Blinkit Morning groceries,Blinkit,-380.00,Groceries
+2026-10-18,Swiggy Dinner soup and bread,Swiggy,-360.00,Dining
+2026-10-22,Apollo Pharmacy Multivitamins,Apollo Pharmacy,-680.00,Health
+2026-10-23,Costa Coffee Cappuccino,Dining,-320.00,Dining

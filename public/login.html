@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In & Security — FinPilot</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <!-- External CDN Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px;">
+
+  <div class="card" style="max-width: 480px; width: 100%; box-shadow: var(--shadow-xl); padding: 36px 32px; border-radius: var(--radius-xl);">
+    
+    <!-- Logo & Brand Header -->
+    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 24px;">
+      <div class="brand-logo" style="width: 48px; height: 48px; font-size: 24px; margin-bottom: 12px;">
+        <i data-lucide="compass"></i>
+      </div>
+      <h1 style="font-size: var(--text-2xl); font-weight: 700; margin-bottom: 4px;">FinPilot</h1>
+      <p style="font-size: var(--text-sm); color: var(--text-secondary);">AI-Powered Personal Finance Copilot</p>
+    </div>
+
+    <!-- Educational Disclaimer Banner -->
+    <div style="background-color: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: var(--radius-md); padding: 12px; font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: 20px; display: flex; gap: 8px; align-items: flex-start;">
+      <i data-lucide="shield-check" style="color: var(--accent-primary); width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;"></i>
+      <span><strong>Educational Prototype & Privacy Guard:</strong> FinPilot does not connect directly to banks or ask for bank logins. All numbers are computed deterministically.</span>
+    </div>
+
+    <!-- Google OAuth Sign-In Button -->
+    <button type="button" id="btn-google-auth" class="btn btn-secondary" style="width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; margin-bottom: 18px; border: 1px solid var(--border-strong); background-color: var(--bg-surface); color: var(--text-primary); cursor: pointer; transition: all 0.15s ease;">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+      </svg>
+      <span>Continue with Google</span>
+    </button>
+
+    <!-- Divider -->
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+      <div style="flex: 1; height: 1px; background-color: var(--border-subtle);"></div>
+      <span style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">or with email</span>
+      <div style="flex: 1; height: 1px; background-color: var(--border-subtle);"></div>
+    </div>
+
+    <!-- Auth Mode Switcher Tabs (Sign In / Sign Up) -->
+    <div style="display: flex; background-color: var(--bg-surface-elevated); padding: 4px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--border-subtle);">
+      <button type="button" id="tab-sign-in" class="btn btn-sm" style="flex: 1; border-radius: var(--radius-sm); font-weight: 600; background-color: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm);">
+        <i data-lucide="log-in" style="width: 14px;"></i> Sign In
+      </button>
+      <button type="button" id="tab-sign-up" class="btn btn-sm btn-ghost" style="flex: 1; border-radius: var(--radius-sm); font-weight: 500; color: var(--text-secondary);">
+        <i data-lucide="user-plus" style="width: 14px;"></i> Create Account
+      </button>
+    </div>
+
+    <!-- Error / Success Alert Box -->
+    <div id="auth-alert" style="display: none; padding: 10px 14px; border-radius: var(--radius-md); font-size: var(--text-xs); margin-bottom: 16px;"></div>
+
+    <!-- Interactive Auth Form -->
+    <form id="auth-form" style="display: flex; flex-direction: column; gap: 14px;">
+      
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="auth-email">Email Address *</label>
+        <div style="position: relative;">
+          <input class="input" type="email" id="auth-email" placeholder="name@example.com" required autocomplete="email" style="padding-left: 36px;">
+          <i data-lucide="mail" style="position: absolute; left: 12px; top: 12px; width: 16px; color: var(--text-muted);"></i>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="auth-password">Password *</label>
+        <div style="position: relative;">
+          <input class="input" type="password" id="auth-password" placeholder="••••••••" required autocomplete="current-password" minlength="6" style="padding-left: 36px; padding-right: 40px;">
+          <i data-lucide="lock" style="position: absolute; left: 12px; top: 12px; width: 16px; color: var(--text-muted);"></i>
+          <button type="button" id="btn-toggle-password" style="position: absolute; right: 10px; top: 10px; color: var(--text-muted); padding: 4px;" aria-label="Toggle password visibility">
+            <i data-lucide="eye" id="icon-toggle-password" style="width: 16px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirm Password (Shown only in Create Account tab) -->
+      <div class="form-group" id="group-confirm-password" style="display: none; margin-bottom: 0;">
+        <label class="form-label" for="auth-confirm-password">Confirm Password *</label>
+        <div style="position: relative;">
+          <input class="input" type="password" id="auth-confirm-password" placeholder="••••••••" autocomplete="new-password" style="padding-left: 36px;">
+          <i data-lucide="shield-check" style="position: absolute; left: 12px; top: 12px; width: 16px; color: var(--text-muted);"></i>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px;">
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          <input type="checkbox" id="auth-remember" checked> Remember this device
+        </label>
+      </div>
+
+      <button type="submit" id="btn-submit-auth" class="btn btn-primary" style="height: 44px; font-weight: 600; margin-top: 4px;">
+        <i data-lucide="arrow-right"></i> <span id="submit-btn-text">Sign In Securely</span>
+      </button>
+
+    </form>
+
+    <div style="display: flex; align-items: center; gap: 12px; margin: 24px 0 18px;">
+      <div style="flex: 1; height: 1px; background-color: var(--border-subtle);"></div>
+      <span style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase;">or guest access</span>
+      <div style="flex: 1; height: 1px; background-color: var(--border-subtle);"></div>
+    </div>
+
+    <!-- Quick Guest Access (Clean personal session) -->
+    <div>
+      <button id="btn-try-demo" class="btn btn-secondary" style="width: 100%; height: 44px; font-weight: 600;">
+        <i data-lucide="user" style="color: var(--accent-primary);"></i> Continue as Guest (Start Fresh)
+      </button>
+      <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 6px;">
+        Private session without passwords. Enter your own income & expenses directly.
+      </p>
+    </div>
+
+    <!-- Theme Toggle on Login Screen -->
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--text-muted);">
+      <span style="display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="lock" style="width: 12px;"></i> Secure Session Guard
+      </span>
+      <button id="btn-theme-toggle" class="btn btn-ghost btn-sm" title="Toggle Theme" aria-label="Toggle theme">
+        <i data-lucide="sun" id="theme-icon"></i>
+      </button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initTheme, toggleTheme } from './js/ui.js';
+    import { api } from './js/api.js';
+    import { state } from './js/state.js';
+    import { renderIcons } from './js/icons.js';
+
+    let currentMode = 'signin'; // 'signin' or 'signup'
+    let showPassword = false;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderIcons();
+      initTheme();
+
+      await api.init();
+
+      // If user is already authenticated, redirect straight to dashboard
+      if (api.isAuthenticated()) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Theme toggle
+      document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
+        toggleTheme();
+        renderIcons();
+      });
+
+      // Tab switcher
+      const tabSignIn = document.getElementById('tab-sign-in');
+      const tabSignUp = document.getElementById('tab-sign-up');
+      const groupConfirm = document.getElementById('group-confirm-password');
+      const submitBtnText = document.getElementById('submit-btn-text');
+
+      tabSignIn?.addEventListener('click', () => {
+        currentMode = 'signin';
+        tabSignIn.style.backgroundColor = 'var(--bg-surface)';
+        tabSignIn.style.color = 'var(--text-primary)';
+        tabSignIn.classList.remove('btn-ghost');
+        tabSignUp.style.backgroundColor = 'transparent';
+        tabSignUp.style.color = 'var(--text-secondary)';
+        tabSignUp.classList.add('btn-ghost');
+        groupConfirm.style.display = 'none';
+        submitBtnText.textContent = 'Sign In Securely';
+        hideAlert();
+        renderIcons();
+      });
+
+      tabSignUp?.addEventListener('click', () => {
+        currentMode = 'signup';
+        tabSignUp.style.backgroundColor = 'var(--bg-surface)';
+        tabSignUp.style.color = 'var(--text-primary)';
+        tabSignUp.classList.remove('btn-ghost');
+        tabSignIn.style.backgroundColor = 'transparent';
+        tabSignIn.style.color = 'var(--text-secondary)';
+        tabSignIn.classList.add('btn-ghost');
+        groupConfirm.style.display = 'block';
+        submitBtnText.textContent = 'Create Account & Sign In';
+        hideAlert();
+        renderIcons();
+      });
+
+      // Password visibility toggle
+      const togglePasswordBtn = document.getElementById('btn-toggle-password');
+      const passwordInput = document.getElementById('auth-password');
+      togglePasswordBtn?.addEventListener('click', () => {
+        showPassword = !showPassword;
+        passwordInput.type = showPassword ? 'text' : 'password';
+        const icon = document.getElementById('icon-toggle-password');
+        if (icon) {
+          icon.setAttribute('data-lucide', showPassword ? 'eye-off' : 'eye');
+          renderIcons();
+        }
+      });
+
+      // Google OAuth Sign-In
+      document.getElementById('btn-google-auth')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btn-google-auth');
+        const origContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spin">⏳</span> Connecting to Google...';
+        try {
+          await api.signInWithGoogle();
+          showAlert('Redirecting to dashboard...', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 350);
+        } catch (err) {
+          showAlert(err.message || 'Google Sign-In failed. Please try again.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = origContent;
+        }
+      });
+
+      // Instant Demo / Guest access
+      document.getElementById('btn-try-demo')?.addEventListener('click', async () => {
+        await api.signInDemo();
+        window.location.href = 'index.html';
+      });
+
+      // Submit Auth Form
+      document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const confirmPassword = document.getElementById('auth-confirm-password')?.value;
+
+        if (currentMode === 'signup') {
+          if (password.length < 6) {
+            showAlert('Password must be at least 6 characters.', 'error');
+            return;
+          }
+          if (password !== confirmPassword) {
+            showAlert('Passwords do not match. Please verify.', 'error');
+            return;
+          }
+        }
+
+        const submitBtn = document.getElementById('btn-submit-auth');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Authenticating...';
+        renderIcons();
+
+        try {
+          if (currentMode === 'signup') {
+            await api.registerWithEmail(email, password);
+            showAlert('Account created successfully! Redirecting...', 'success');
+          } else {
+            await api.signInWithRegisteredEmail(email, password);
+            showAlert('Authenticated! Redirecting to FinPilot...', 'success');
+          }
+
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 400);
+
+        } catch (err) {
+          showAlert(err.message || 'Authentication error. Please check your credentials.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i data-lucide="arrow-right"></i> <span>${currentMode === 'signup' ? 'Create Account & Sign In' : 'Sign In Securely'}</span>`;
+          renderIcons();
+        }
+      });
+    });
+
+    function showAlert(msg, type = 'error') {
+      const alertBox = document.getElementById('auth-alert');
+      if (!alertBox) return;
+      alertBox.textContent = msg;
+      alertBox.style.display = 'block';
+      if (type === 'error') {
+        alertBox.style.backgroundColor = 'var(--accent-expense-subtle)';
+        alertBox.style.color = 'var(--accent-expense)';
+        alertBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      } else {
+        alertBox.style.backgroundColor = 'var(--accent-income-subtle)';
+        alertBox.style.color = 'var(--accent-income)';
+        alertBox.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      }
+    }
+
+    function hideAlert() {
+      const alertBox = document.getElementById('auth-alert');
+      if (alertBox) alertBox.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

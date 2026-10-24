@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinPilot — AI Personal Finance Copilot</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/chat.css">
+
+  <!-- External CDN Libraries (Vanilla stack, no frameworks) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR (Desktop) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo"><i data-lucide="compass"></i></div>
+        <div class="brand-text">FinPilot</div>
+        <div class="brand-badge">COPILOT</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-link active" data-view="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#transactions" class="nav-link" data-view="transactions">
+          <i data-lucide="arrow-left-right"></i>
+          <span>Transactions</span>
+        </a>
+        <a href="#recurring" class="nav-link" data-view="recurring">
+          <i data-lucide="repeat"></i>
+          <span>Recurring & Bills</span>
+        </a>
+        <a href="#flags" class="nav-link" data-view="flags">
+          <i data-lucide="flag"></i>
+          <span>Review</span>
+          <span id="badge-flag-count" class="nav-badge" style="display: none;">0</span>
+        </a>
+        <a href="#goals" class="nav-link" data-view="goals">
+          <i data-lucide="target"></i>
+          <span>Goals & Scenarios</span>
+        </a>
+        <a href="#import" class="nav-link" data-view="import">
+          <i data-lucide="upload-cloud"></i>
+          <span>Import Data</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-badge" id="user-badge-sidebar" style="cursor: pointer;" title="Manage User Account & Switch Profiles">
+          <div class="user-avatar" id="user-avatar-initial">U</div>
+          <div class="user-details">
+            <span class="user-name" id="user-display-email">demo@finpilot.local</span>
+            <span class="user-status" id="user-display-role">Educational Demo</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-open-chat-sidebar" class="btn btn-secondary btn-sm" style="flex: 1;" title="Open AI Copilot">
+            <i data-lucide="bot"></i> AI Copilot
+          </button>
+          <button id="btn-logout" class="btn btn-ghost btn-sm btn-icon" title="Logout / Switch User" aria-label="Logout">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-wrapper">
+      
+      <!-- Top Application Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <h2 id="page-title" style="font-size: var(--text-lg); font-weight: 700;">Dashboard</h2>
+          <div id="sample-data-badge" class="sample-banner" style="display: none; cursor: pointer;" title="Viewing sample demo data. Click to clear and record your own data.">
+            <i data-lucide="database"></i>
+            <span>SAMPLE DATA</span>
+            <span style="font-size: 10px; margin-left: 4px; text-decoration: underline; opacity: 0.9;">(Clear)</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Time Period Selector -->
+          <select id="period-selector" class="select" style="width: auto; height: 38px; padding: 4px 12px; font-size: var(--text-xs);" aria-label="Select Time Period">
+            <option value="all">All Time (6 Months)</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="last_3_months">Last 3 Months</option>
+          </select>
+
+          <!-- Clear Data Button -->
+          <button id="btn-header-start-fresh" class="btn btn-ghost btn-sm" title="Clear all data and start fresh" style="height: 38px; display: none; color: var(--accent-expense); gap: 4px;">
+            <i data-lucide="trash-2" style="width: 14px;"></i>
+            <span style="font-size: var(--text-xs); font-weight: 500;">Clear Data</span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button id="btn-theme-toggle" class="btn btn-ghost btn-icon" title="Toggle Theme" aria-label="Toggle theme">
+            <i data-lucide="sun" id="theme-icon"></i>
+          </button>
+
+          <!-- Account Profile & Switcher -->
+          <button id="btn-header-profile" class="btn btn-ghost btn-sm" title="Manage User Account" style="height: 38px; display: flex; align-items: center; gap: 6px; padding: 4px 10px;">
+            <i data-lucide="user"></i>
+            <span id="btn-header-username" style="font-size: var(--text-xs); font-weight: 500;">Account</span>
+          </button>
+
+          <!-- Add Transaction Button (Global header access) -->
+          <button id="btn-header-add-tx" class="btn btn-secondary btn-sm" title="Add a transaction manually" style="height: 38px; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+            <i data-lucide="plus-circle" style="color: var(--accent-primary);"></i>
+            <span style="font-size: var(--text-xs);">Add Transaction</span>
+          </button>
+
+          <!-- Voice Quick Add Button -->
+          <button id="btn-header-voice-tx" class="btn btn-ghost btn-sm" title="Voice Add Transaction (Speak to Add)" style="height: 38px; display: flex; align-items: center; gap: 6px; color: var(--accent-primary); border: 1px solid rgba(14, 165, 233, 0.3);">
+            <i data-lucide="mic"></i>
+            <span style="font-size: var(--text-xs); font-weight: 600;">Voice Add</span>
+          </button>
+
+          <!-- AI Chat Trigger -->
+          <button id="btn-header-copilot" class="btn btn-primary btn-sm" style="height: 38px;">
+            <i data-lucide="sparkles"></i>
+            <span>Ask FinPilot</span>
+          </button>
+
+          <!-- Sign Out Button -->
+          <button id="btn-header-logout" class="btn btn-ghost btn-icon" title="Sign Out / Security" aria-label="Sign out">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW CONTAINER -->
+      <main class="main-content">
+        
+        <!-- ========================================== -->
+        <!-- VIEW 1: DASHBOARD -->
+        <!-- ========================================== -->
+        <section id="view-dashboard" class="app-view">
+          
+          <!-- Open Flags Prompt Banner if any -->
+          <div id="dashboard-flags-banner" style="display: none; margin-bottom: 24px; padding: 14px 18px; border-radius: var(--radius-md); background-color: var(--accent-review-subtle); border: 1px solid rgba(245, 158, 11, 0.4); align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="alert-triangle" style="color: var(--accent-review);"></i>
+              <span id="dashboard-flags-text" style="font-size: var(--text-sm); font-weight: 500; color: var(--text-primary);">
+                You have items flagged for review.
+              </span>
+            </div>
+            <a href="#flags" class="btn btn-secondary btn-sm" style="background-color: var(--bg-surface);">Review Now</a>
+          </div>
+
+          <!-- Welcome / Interactive Onboarding Workspace Card -->
+          <div id="dashboard-empty-banner" class="card onboarding-banner-card" style="margin-bottom: 28px; padding: 24px 26px; background: linear-gradient(135deg, rgba(14, 165, 233, 0.07) 0%, rgba(99, 102, 241, 0.05) 100%); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);">
+            
+            <!-- Header Section -->
+            <div style="margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="font-size: 22px;">👋</span>
+                <h3 style="font-size: var(--text-lg); font-weight: 700; margin: 0; color: var(--text-primary);">
+                  Welcome to FinPilot, <span id="onboarding-user-name">Friend</span>!
+                </h3>
+              </div>
+              <p style="font-size: var(--text-xs); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                Your personal finance copilot is clean and ready. Add your real income and living expenses, or upload your bank statement CSV to track your finances.
+              </p>
+            </div>
+
+            <!-- 3 Columns Interactive Grid -->
+            <div class="onboarding-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+              
+              <!-- Column 1: Add Income -->
+              <div class="onboarding-col-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <div style="width: 34px; height: 34px; border-radius: var(--radius-full); background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-income); flex-shrink: 0;">
+                    <i data-lucide="arrow-down-left" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: var(--text-sm); font-weight: 700; margin: 0; color: var(--text-primary);">1. Add Income</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Record your paycheck or deposit</p>
+                  </div>
+                </div>
+
+                <button type="button" id="btn-onboarding-add-income" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; gap: 6px; font-weight: 600; color: var(--accent-income); border-color: rgba(16, 185, 129, 0.3); margin-top: 6px;">
+                  <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Monthly Income
+                </button>
+
+                <!-- Dynamic Income List Container -->
+                <div id="onboarding-income-list" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto;">
+                  <!-- Populated by updateOnboardingUI() -->
+                </div>
+              </div>
+
+              <!-- Column 2: Record Expenses -->
+              <div class="onboarding-col-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <div style="width: 34px; height: 34px; border-radius: var(--radius-full); background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-expense); flex-shrink: 0;">
+                    <i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: var(--text-sm); font-weight: 700; margin: 0; color: var(--text-primary);">2. Record Expenses</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Add rent, dining, shopping, or bills</p>
+                  </div>
+                </div>
+
+                <button type="button" id="btn-onboarding-add-expense" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; gap: 6px; font-weight: 600; color: var(--accent-expense); border-color: rgba(239, 68, 68, 0.3); margin-top: 6px;">
+                  <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Expense
+                </button>
+
+                <!-- Dynamic Expense List Container -->
+                <div id="onboarding-expense-list" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto;">
+                  <!-- Populated by updateOnboardingUI() -->
+                </div>
+              </div>
+
+              <!-- Column 3: Goals & Statement -->
+              <div class="onboarding-col-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <div style="width: 34px; height: 34px; border-radius: var(--radius-full); background: rgba(14, 165, 233, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); flex-shrink: 0;">
+                    <i data-lucide="target" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: var(--text-sm); font-weight: 700; margin: 0; color: var(--text-primary);">3. Goals & Statement</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Set milestone or import bank CSV</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 6px; margin-top: 6px;">
+                  <button type="button" id="btn-onboarding-add-goal" class="btn btn-secondary btn-sm" style="flex: 1; justify-content: center; gap: 4px; font-weight: 600; color: var(--accent-primary); border-color: rgba(14, 165, 233, 0.3); font-size: 11px;">
+                    <i data-lucide="plus" style="width: 13px; height: 13px;"></i> Set Goal
+                  </button>
+                  <a href="#import" class="btn btn-secondary btn-sm" style="flex: 1; justify-content: center; gap: 4px; font-weight: 500; font-size: 11px;">
+                    <i data-lucide="upload" style="width: 13px; height: 13px;"></i> Import CSV
+                  </a>
+                </div>
+
+                <!-- Dynamic Goals List Container -->
+                <div id="onboarding-goal-list" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto;">
+                  <!-- Populated by updateOnboardingUI() -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- KPI Cards Grid -->
+          <div class="grid grid-12" style="margin-bottom: 24px;">
+            
+            <div class="col-3 card kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Total Inflow</span>
+                <button class="kpi-info-btn" data-calc="income" title="How is this calculated?" aria-label="How is this calculated?"><i data-lucide="info"></i></button>
+              </div>
+              <div class="kpi-value" id="kpi-income" style="color: var(--accent-income);">₹0.00</div>
+              <div class="kpi-subtext">
+                <i data-lucide="trending-up" style="width: 14px; color: var(--accent-income);"></i>
+                <span>Salary & other income</span>
+              </div>
+            </div>
+
+            <div class="col-3 card kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Total Spending</span>
+                <button class="kpi-info-btn" data-calc="spending" title="How is this calculated?" aria-label="How is this calculated?"><i data-lucide="info"></i></button>
+              </div>
+              <div class="kpi-value" id="kpi-spending">₹0.00</div>
+              <div class="kpi-subtext">
+                <i data-lucide="shopping-bag" style="width: 14px; color: var(--accent-expense);"></i>
+                <span id="kpi-spending-sub">Expenses (excl. transfers)</span>
+              </div>
+            </div>
+
+            <div class="col-3 card kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Net Surplus</span>
+                <button class="kpi-info-btn" data-calc="net" title="How is this calculated?" aria-label="How is this calculated?"><i data-lucide="info"></i></button>
+              </div>
+              <div class="kpi-value" id="kpi-net">₹0.00</div>
+              <div class="kpi-subtext">
+                <i data-lucide="wallet" style="width: 14px; color: var(--accent-teal);"></i>
+                <span>Income minus Outflows</span>
+              </div>
+            </div>
+
+            <div class="col-3 card kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Savings Rate</span>
+                <button class="kpi-info-btn" data-calc="savingsRate" title="How is this calculated?" aria-label="How is this calculated?"><i data-lucide="info"></i></button>
+              </div>
+              <div class="kpi-value" id="kpi-savings-rate" style="color: var(--accent-primary);">0.0%</div>
+              <div class="kpi-subtext">
+                <i data-lucide="percent" style="width: 14px; color: var(--accent-primary);"></i>
+                <span>Portion of income saved</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Charts Row 1: Category Breakdown & Monthly Trend -->
+          <div class="grid grid-12" style="margin-bottom: 24px;">
+            <div class="col-4 card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title"><i data-lucide="pie-chart"></i> Spending by Category</h3>
+                  <div class="card-subtitle">Where your money goes</div>
+                </div>
+              </div>
+              <div style="position: relative; height: 260px;">
+                <canvas id="chart-categories" aria-label="Category Spending Doughnut Chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <div class="col-8 card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title"><i data-lucide="bar-chart-3"></i> Monthly Income vs Spending</h3>
+                  <div class="card-subtitle">Historical month-by-month cashflow</div>
+                </div>
+              </div>
+              <div style="position: relative; height: 260px;">
+                <canvas id="chart-monthly" aria-label="Monthly Inflow vs Outflow Bar Chart" role="img"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row 2: Cumulative Cash Flow & Top Outlets -->
+          <div class="grid grid-12">
+            <div class="col-8 card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title"><i data-lucide="line-chart"></i> Cumulative Cash Flow</h3>
+                  <div class="card-subtitle">Net wealth trajectory across months</div>
+                </div>
+              </div>
+              <div style="position: relative; height: 260px;">
+                <canvas id="chart-cumulative" aria-label="Cumulative Cash Flow Line Chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <div class="col-4 card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title"><i data-lucide="store"></i> Top Outlets</h3>
+                  <div class="card-subtitle">Largest expense destinations</div>
+                </div>
+              </div>
+              <div id="top-merchants-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 260px; overflow-y: auto;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: TRANSACTIONS -->
+        <!-- ========================================== -->
+        <section id="view-transactions" class="app-view" style="display: none;">
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+              
+              <!-- Search & Filter inputs -->
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+                <input type="text" id="tx-search-input" class="input" placeholder="Search by merchant, description..." style="max-width: 280px;">
+                
+                <select id="tx-category-filter" class="select" style="max-width: 200px;">
+                  <option value="">All Categories</option>
+                  <!-- Populated from categories list -->
+                </select>
+
+                <select id="tx-type-filter" class="select" style="max-width: 140px;">
+                  <option value="">All Types</option>
+                  <option value="expense">Expenses Only</option>
+                  <option value="income">Income Only</option>
+                  <option value="transfer">Transfers</option>
+                </select>
+              </div>
+
+              <!-- Action buttons -->
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-voice-add-transaction" class="btn btn-outline btn-sm" title="Voice Add Transaction (Speak to Add)" style="border-color: var(--accent-primary); color: var(--accent-primary); gap: 6px;">
+                  <i data-lucide="mic"></i> Voice Add
+                </button>
+                <button id="btn-add-transaction" class="btn btn-primary btn-sm" title="Add a new transaction">
+                  <i data-lucide="plus-circle"></i> Add Transaction
+                </button>
+                <button id="btn-export-csv" class="btn btn-secondary btn-sm" title="Export as CSV">
+                  <i data-lucide="download"></i> Export CSV
+                </button>
+                <button id="btn-bulk-delete" class="btn btn-danger btn-sm" style="display: none;" title="Delete selected transactions">
+                  <i data-lucide="trash-2"></i> Delete Selected (<span id="bulk-delete-count">0</span>)
+                </button>
+                <button id="btn-bulk-recat" class="btn btn-outline btn-sm" style="display: none;">
+                  <i data-lucide="tag"></i> Recategorise Selected (<span id="bulk-count">0</span>)
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div class="card table-container" style="padding: 0;">
+            <table class="table" id="transactions-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" id="th-select-all" aria-label="Select all transactions"></th>
+                  <th class="sortable" data-sort="txn_date">Date <i data-lucide="chevrons-up-down" style="width: 12px; display: inline;"></i></th>
+                  <th>Merchant / Description</th>
+                  <th>Category (Inline Edit)</th>
+                  <th class="sortable" data-sort="amount" style="text-align: right;">Amount <i data-lucide="chevrons-up-down" style="width: 12px; display: inline;"></i></th>
+                  <th style="text-align: center;">Flags</th>
+                  <th style="text-align: center; width: 70px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-table-body">
+                <!-- Populated via transactions.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: var(--text-xs); color: var(--text-secondary);">
+            <div id="tx-pagination-info">Showing 1-25 of 0 transactions</div>
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-tx-prev" class="btn btn-secondary btn-sm" disabled><i data-lucide="chevron-left"></i> Previous</button>
+              <button id="btn-tx-next" class="btn btn-secondary btn-sm" disabled>Next <i data-lucide="chevron-right"></i></button>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: RECURRING PAYMENTS & BILLS -->
+        <!-- ========================================== -->
+        <section id="view-recurring" class="app-view" style="display: none;">
+          
+          <!-- Summary Cards -->
+          <div class="grid grid-12" style="margin-bottom: 24px;">
+            <div class="col-6 card">
+              <span class="kpi-label">Estimated Monthly Commitments</span>
+              <div class="kpi-value" id="recurring-monthly-total" style="color: var(--accent-primary); margin-top: 8px;">₹0.00</div>
+              <div class="kpi-subtext" style="margin-top: 4px;">Sum of active regular subscriptions and bills</div>
+            </div>
+
+            <div class="col-6 card">
+              <span class="kpi-label">Annualized Cost Highlight</span>
+              <div class="kpi-value" id="recurring-yearly-total" style="color: var(--accent-review); margin-top: 8px;">₹0.00</div>
+              <div class="kpi-subtext" style="margin-top: 4px;">Total capital allocated annually to fixed recurring charges</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title"><i data-lucide="repeat"></i> Detected Subscriptions & Recurring Bills</h3>
+                <div class="card-subtitle">Automatically identified based on cadence clustering (7, 14, 30, 365 days) and consistent amounts</div>
+              </div>
+            </div>
+
+            <div id="recurring-list-container" class="grid grid-12">
+              <!-- Populated via recurring.js -->
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: REVIEW (FLAGS) -->
+        <!-- ========================================== -->
+        <section id="view-flags" class="app-view" style="display: none;">
+          
+          <!-- Neutral Ethical Statement -->
+          <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px;">
+            <i data-lucide="shield-alert" style="color: var(--accent-review); width: 24px; height: 24px; flex-shrink: 0; margin-top: 2px;"></i>
+            <div>
+              <h4 style="font-size: var(--text-base); font-weight: 600; margin-bottom: 4px;">Flagged for Your Review</h4>
+              <p style="font-size: var(--text-xs); color: var(--text-secondary);">
+                FinPilot uses strictly neutral rules to identify unusual amounts, sudden price hikes, or duplicate charges.
+                <strong>Flags are prompts to review, never accusations or confirmed fraud.</strong> You can confirm transactions as normal, dismiss the prompt, or mark them for personal follow-up.
+              </p>
+            </div>
+          </div>
+
+          <div id="flags-list-container" style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Populated via flags.js -->
+          </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 5: GOALS & WHAT-IF SCENARIOS -->
+        <!-- ========================================== -->
+        <section id="view-goals" class="app-view" style="display: none;">
+          
+          <div class="grid grid-12" style="margin-bottom: 24px;">
+            
+            <!-- Left: Active Goals -->
+            <div class="col-4 card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title"><i data-lucide="target"></i> Savings Goals</h3>
+                  <div class="card-subtitle">Your target milestones</div>
+                </div>
+                <button id="btn-create-goal" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> New Goal</button>
+              </div>
+
+              <div id="goals-list-container" style="display: flex; flex-direction: column; gap: 14px;">
+                <!-- Populated via goals.js -->
+              </div>
+            </div>
+
+            <!-- Right: Interactive Scenario Builder -->
+            <div class="col-8 card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title"><i data-lucide="sliders"></i> What-If Cash-Flow Scenario Simulator</h3>
+                  <div class="card-subtitle">Explore how spending cuts and income changes accelerate your goal</div>
+                </div>
+                <button id="btn-reset-scenario" class="btn btn-ghost btn-sm"><i data-lucide="rotate-ccw"></i> Reset</button>
+              </div>
+
+              <!-- Sliders & Inputs -->
+              <div class="grid grid-12" style="gap: 16px; margin-bottom: 20px;">
+                
+                <div class="col-6 slider-container">
+                  <div class="slider-header">
+                    <span>Cut Dining Spending</span>
+                    <strong id="label-cut-dining">0% (₹0/mo)</strong>
+                  </div>
+                  <input type="range" id="slider-cut-dining" class="slider" min="0" max="60" value="0" step="5">
+                </div>
+
+                <div class="col-6 slider-container">
+                  <div class="slider-header">
+                    <span>Cut Shopping Spending</span>
+                    <strong id="label-cut-shopping">0% (₹0/mo)</strong>
+                  </div>
+                  <input type="range" id="slider-cut-shopping" class="slider" min="0" max="60" value="0" step="5">
+                </div>
+
+                <div class="col-6 slider-container">
+                  <div class="slider-header">
+                    <span>Extra Monthly Income</span>
+                    <strong id="label-extra-income">+₹0/mo</strong>
+                  </div>
+                  <input type="range" id="slider-extra-income" class="slider" min="0" max="50000" value="0" step="1000">
+                </div>
+
+                <div class="col-6 slider-container">
+                  <div class="slider-header">
+                    <span>One-Off Lump Expense</span>
+                    <strong id="label-one-off">₹0</strong>
+                  </div>
+                  <input type="range" id="slider-one-off" class="slider" min="0" max="100000" value="0" step="5000">
+                </div>
+
+              </div>
+
+              <!-- Scenario Output KPI Box -->
+              <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
+                <div class="grid grid-12">
+                  <div class="col-4">
+                    <span class="kpi-label">New Monthly Savings</span>
+                    <div id="scenario-monthly-savings" class="kpi-value" style="font-size: var(--text-2xl); color: var(--accent-income); margin-top: 4px;">₹0.00</div>
+                  </div>
+                  <div class="col-4">
+                    <span class="kpi-label">Months to Goal</span>
+                    <div id="scenario-months-to-goal" class="kpi-value" style="font-size: var(--text-2xl); color: var(--accent-primary); margin-top: 4px;">0 mo</div>
+                  </div>
+                  <div class="col-4">
+                    <span class="kpi-label">Projected Date</span>
+                    <div id="scenario-projected-date" class="kpi-value" style="font-size: var(--text-2xl); color: var(--accent-teal); margin-top: 4px;">TBD</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Simulation Projection Chart -->
+              <div style="position: relative; height: 220px; margin-bottom: 20px;">
+                <canvas id="chart-scenario-projection" aria-label="Goal Savings Projection Chart" role="img"></canvas>
+              </div>
+
+              <!-- Mandatory Show Calculation & Assumptions Accordion -->
+              <div class="calc-panel" id="scenario-calc-accordion">
+                <div class="calc-panel-header" id="btn-toggle-scenario-calc">
+                  <span style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="calculator"></i>
+                    <span>Show Calculation Formula & Assumptions</span>
+                  </span>
+                  <i data-lucide="chevron-down" id="scenario-calc-chevron"></i>
+                </div>
+                <div class="calc-panel-content" id="scenario-calc-body" style="display: none;">
+                  <div><strong>Deterministic Formula:</strong></div>
+                  <div class="formula-box">
+                    NewMonthlySavings = (MonthlyIncome - MonthlyExpenses) + CategoryCuts + ExtraIncome<br>
+                    FutureBalance(m) = FutureBalance(m-1) + NewMonthlySavings<br>
+                    MonthsToGoal = ceil((GoalTarget - StartingBalance) / NewMonthlySavings)
+                  </div>
+                  <div style="margin-top: 8px;"><strong>Explicit Model Assumptions:</strong></div>
+                  <ul id="scenario-assumptions-list" style="padding-left: 20px; display: flex; flex-direction: column; gap: 4px; color: var(--text-secondary);">
+                    <!-- Populated dynamically via engine.js -->
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 6: IMPORT DATA & RECONCILIATION -->
+        <!-- ========================================== -->
+        <section id="view-import" class="app-view" style="display: none;">
+          
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title"><i data-lucide="file-up"></i> Import Bank CSV</h3>
+                <div class="card-subtitle">Upload your exported bank or credit card statement (CSV format)</div>
+              </div>
+            </div>
+
+            <!-- Drag and Drop Dropzone -->
+            <div id="csv-dropzone" class="dropzone">
+              <i data-lucide="cloud-upload" style="width: 48px; height: 48px; margin: 0 auto 12px; color: var(--accent-primary);"></i>
+              <h4 style="font-size: var(--text-base); font-weight: 600; margin-bottom: 4px;">Drag and drop your bank CSV here</h4>
+              <p style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 14px;">or browse files from your computer</p>
+              <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('csv-file-input').click()">
+                Choose CSV File
+              </button>
+            </div>
+
+            <!-- Column Mapper Section (Hidden until file selected) -->
+            <div id="column-mapper-section" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-subtle);">
+              <h4 style="font-size: var(--text-sm); font-weight: 600; margin-bottom: 12px;">Map CSV Columns</h4>
+              <div class="grid grid-12" style="gap: 14px; margin-bottom: 16px;">
+                <div class="col-3 form-group" style="margin: 0;">
+                  <label class="form-label" for="map-col-date">Date Column *</label>
+                  <select id="map-col-date" class="select"></select>
+                </div>
+                <div class="col-3 form-group" style="margin: 0;">
+                  <label class="form-label" for="map-col-desc">Description / Merchant *</label>
+                  <select id="map-col-desc" class="select"></select>
+                </div>
+                <div class="col-3 form-group" style="margin: 0;">
+                  <label class="form-label" for="map-col-amount">Amount Column *</label>
+                  <select id="map-col-amount" class="select"></select>
+                </div>
+                <div class="col-3 form-group" style="margin: 0;">
+                  <label class="form-label" for="map-col-category">Category (Optional)</label>
+                  <select id="map-col-category" class="select"></select>
+                </div>
+              </div>
+
+              <!-- Preview Table of first 20 rows -->
+              <h4 style="font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Preview (First 20 Rows)</h4>
+              <div class="table-container" style="max-height: 240px; margin-bottom: 16px;">
+                <table class="table" id="import-preview-table">
+                  <thead id="import-preview-head"></thead>
+                  <tbody id="import-preview-body"></tbody>
+                </table>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="btn-cancel-import" class="btn btn-ghost btn-sm">Cancel</button>
+                <button id="btn-confirm-import" class="btn btn-primary btn-sm"><i data-lucide="check"></i> Process & Import</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Mandatory Reconciliation Audit Panel -->
+          <div id="reconciliation-panel" class="card" style="display: none; border-left: 4px solid var(--accent-income);">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title" id="recon-status-title">
+                  <i data-lucide="check-circle-2" style="color: var(--accent-income);"></i> Reconciliation Audit Report
+                </h3>
+                <div class="card-subtitle" id="recon-status-subtitle">
+                  Deterministic audit: Inflow, outflow and row count verified against raw CSV input.
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-12" style="margin-bottom: 16px;">
+              <div class="col-4" style="background-color: var(--bg-surface-elevated); padding: 14px; border-radius: var(--radius-md);">
+                <span class="kpi-label">Row Count Verification</span>
+                <div id="recon-rows-val" style="font-size: var(--text-xl); font-weight: 700; margin-top: 4px;">0 / 0 (Matched)</div>
+              </div>
+              <div class="col-4" style="background-color: var(--bg-surface-elevated); padding: 14px; border-radius: var(--radius-md);">
+                <span class="kpi-label">Total Inflow Verified</span>
+                <div id="recon-inflow-val" style="font-size: var(--text-xl); font-weight: 700; color: var(--accent-income); margin-top: 4px;">₹0.00</div>
+              </div>
+              <div class="col-4" style="background-color: var(--bg-surface-elevated); padding: 14px; border-radius: var(--radius-md);">
+                <span class="kpi-label">Total Outflow Verified</span>
+                <div id="recon-outflow-val" style="font-size: var(--text-xl); font-weight: 700; color: var(--accent-expense); margin-top: 4px;">₹0.00</div>
+              </div>
+            </div>
+
+            <p id="recon-summary-msg" style="font-size: var(--text-xs); color: var(--text-secondary);"></p>
+          </div>
+
+        </section>
+
+      </main>
+
+      <!-- PERSISTENT FOOTER (Mandatory Disclaimer) -->
+      <footer class="persistent-footer">
+        <div class="footer-disclaimer">
+          <i data-lucide="shield-check" style="color: var(--accent-teal);"></i>
+          <span>FinPilot is an educational prototype. It is not regulated financial advice. All computations are deterministic.</span>
+        </div>
+        <div>
+          <span>Privacy: No bank logins or credentials ever requested.</span>
+        </div>
+      </footer>
+
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="mobile-nav">
+      <a href="#dashboard" class="mobile-nav-link active" data-view="dashboard">
+        <i data-lucide="layout-dashboard" style="width: 20px;"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#transactions" class="mobile-nav-link" data-view="transactions">
+        <i data-lucide="arrow-left-right" style="width: 20px;"></i>
+        <span>Txns</span>
+      </a>
+      <a href="#recurring" class="mobile-nav-link" data-view="recurring">
+        <i data-lucide="repeat" style="width: 20px;"></i>
+        <span>Recurring</span>
+      </a>
+      <a href="#flags" class="mobile-nav-link" data-view="flags">
+        <i data-lucide="flag" style="width: 20px;"></i>
+        <span>Review</span>
+      </a>
+      <a href="#goals" class="mobile-nav-link" data-view="goals">
+        <i data-lucide="target" style="width: 20px;"></i>
+        <span>Goals</span>
+      </a>
+      <a href="#import" class="mobile-nav-link" data-view="import">
+        <i data-lucide="upload-cloud" style="width: 20px;"></i>
+        <span>Import</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- AI COPILOT SLIDE-OVER PANEL -->
+  <!-- ========================================== -->
+  <aside id="chat-panel" class="chat-panel">
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="brand-logo" style="width: 30px; height: 30px; font-size: 14px;"><i data-lucide="bot"></i></div>
+        <div>
+          <h3 style="font-size: var(--text-sm); font-weight: 700;">FinPilot Copilot</h3>
+          <span style="font-size: 10px; color: var(--accent-teal);">Grounded strictly in your data</span>
+        </div>
+      </div>
+      <button id="btn-close-chat" class="btn btn-ghost btn-sm btn-icon" aria-label="Close Chat"><i data-lucide="x"></i></button>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="chat-messages" class="chat-messages">
+      <div class="chat-msg assistant">
+        <div>Hello! I'm your FinPilot assistant. Ask me anything about your income, spending, subscriptions, savings goals, or flagged items.</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Every answer is computed by deterministic tools and cited with source transactions.</div>
+      </div>
+    </div>
+
+    <!-- Suggested Prompt Chips -->
+    <div class="chat-chips">
+      <button class="chip-btn" data-prompt="Where did I overspend this month?">Where did I overspend?</button>
+      <button class="chip-btn" data-prompt="What subscriptions and recurring bills do I have?">What subscriptions do I have?</button>
+      <button class="chip-btn" data-prompt="Show me all transactions flagged for review.">Show flagged items</button>
+      <button class="chip-btn" data-prompt="Can I reach my savings goal faster if I cut Dining?">Can I reach my goal faster?</button>
+    </div>
+
+    <!-- Chat Input Form -->
+    <form id="chat-form" style="padding: 16px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; align-items: center;">
+      <input type="text" id="chat-input" class="input" placeholder="Ask about your finances..." autocomplete="off" style="flex: 1;">
+      <button type="button" id="btn-chat-mic" class="btn btn-ghost btn-icon" title="Voice dictation (Speak your query)" aria-label="Voice input" style="height: 42px; width: 42px; color: var(--accent-primary);">
+        <i data-lucide="mic"></i>
+      </button>
+      <button type="submit" id="btn-send-chat" class="btn btn-primary btn-icon" aria-label="Send message" style="height: 42px; width: 42px;">
+        <i data-lucide="send"></i>
+      </button>
+    </form>
+
+    <!-- Chat Persistent Disclaimer -->
+    <div style="padding: 8px 16px; background-color: var(--bg-surface-elevated); font-size: 10px; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-subtle);">
+      FinPilot is an educational prototype. It is not regulated financial advice.
+    </div>
+  </aside>
+
+  <!-- Floating Chat Toggle Button (Visible when chat closed) -->
+  <button id="btn-floating-chat" class="chat-toggle-btn" title="Open AI Copilot" aria-label="Open AI Copilot">
+    <i data-lucide="sparkles"></i>
+  </button>
+
+  <!-- ========================================== -->
+  <!-- MODALS -->
+  <!-- ========================================== -->
+
+  <!-- Voice Transaction Modal (Speech-to-Transaction & Text-to-Speech) -->
+  <div id="modal-voice-transaction" class="modal-overlay">
+    <div class="modal" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="mic" style="color: var(--accent-primary);"></i>
+          <span>Voice Transaction Logger</span>
+        </h3>
+        <button type="button" class="btn btn-ghost btn-sm btn-icon" id="btn-close-voice-modal" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="text-align: center; padding: 24px 20px;">
+        
+        <!-- Big Animated Pulse Microphone Button -->
+        <div style="position: relative; width: 84px; height: 84px; margin: 0 auto 18px auto; display: flex; align-items: center; justify-content: center;">
+          <div id="voice-pulse-ring" style="position: absolute; inset: -8px; border-radius: 50%; border: 2px solid var(--accent-primary); animation: voicePulse 1.5s infinite; opacity: 0.6; display: none;"></div>
+          <button type="button" id="btn-voice-record-toggle" class="btn btn-icon" style="width: 72px; height: 72px; border-radius: 50%; background: var(--accent-primary); color: #ffffff; border: none; font-size: 28px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; z-index: 2;" title="Click to start/stop listening">
+            <i data-lucide="mic" style="width: 32px; height: 32px;"></i>
+          </button>
+        </div>
+
+        <p id="voice-status-msg" style="font-size: var(--text-sm); font-weight: 500; color: var(--text-secondary); margin-bottom: 12px; min-height: 20px;">
+          Listening... Speak naturally (e.g., "300 for shopping" or "500 petrol")
+        </p>
+
+        <!-- Live Spoken Transcript -->
+        <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 18px; min-height: 52px; display: flex; align-items: center; justify-content: center; text-align: center;">
+          <span id="voice-live-transcript" style="font-size: var(--text-md); font-weight: 600; color: var(--text-primary); font-style: italic;">
+            "Say something like 'Spent 450 on Swiggy' or '300 for shopping'..."
+          </span>
+        </div>
+
+        <!-- Live Parsed Transaction Card Preview -->
+        <div id="voice-preview-card" style="display: none; background: var(--bg-surface); border: 1px solid rgba(14, 165, 233, 0.35); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 18px; text-align: left; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+            <span style="font-size: var(--text-xs); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: var(--text-secondary);">Detected Transaction</span>
+            <span id="preview-tx-type" class="badge badge-expense">EXPENSE</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+            <span id="preview-tx-merchant" style="font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);">Shopping</span>
+            <span id="preview-tx-amount" style="font-size: 22px; font-weight: 800; color: var(--accent-expense);">₹300.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--text-secondary);">
+            <span>Category: <strong id="preview-tx-category" style="color: var(--text-primary);">Shopping</strong></span>
+            <span>Date: <span id="preview-tx-date">Today</span></span>
+          </div>
+        </div>
+
+        <!-- Optional Manual Text Fallback -->
+        <div style="margin-bottom: 16px;">
+          <input type="text" id="voice-manual-input" class="input" placeholder="Or type naturally: e.g. '300 for shopping' or '₹500 petrol'" style="font-size: var(--text-xs);">
+        </div>
+
+        <!-- Voice Preferences & Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--text-secondary); padding-top: 8px; border-top: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="voice-lang-select" style="cursor: pointer;">Dialect:</label>
+            <select id="voice-lang-select" class="select" style="width: auto; height: 28px; padding: 2px 8px; font-size: 11px;">
+              <option value="en-IN">English (India)</option>
+              <option value="hi-IN">Hindi (हिंदी)</option>
+              <option value="en-US">English (US)</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;" title="Automatically read back confirmation using Text-to-Speech">
+              <input type="checkbox" id="voice-tts-toggle" checked style="accent-color: var(--accent-primary);">
+              <span>Voice Feedback</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;" title="Save automatically after speaking without needing to click confirm">
+              <input type="checkbox" id="voice-auto-save-toggle" style="accent-color: var(--accent-primary);">
+              <span>Auto-save</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-cancel-voice">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-voice-save" disabled style="gap: 6px;">
+          <i data-lucide="check"></i> Confirm & Save Transaction
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Transaction Modal -->
+  <div id="modal-add-transaction" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="plus-circle" style="color: var(--accent-primary);"></i> Add New Transaction</h3>
+        <button type="button" class="btn btn-ghost btn-sm btn-icon" id="btn-close-add-tx-modal" aria-label="Close modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-add-transaction">
+        <div class="modal-body">
+          <!-- Voice Quick Fill Banner -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 8px 12px; background: rgba(14, 165, 233, 0.08); border-radius: var(--radius-md); border: 1px dashed rgba(14, 165, 233, 0.4);">
+            <div style="font-size: var(--text-xs); color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="sparkles" style="color: var(--accent-primary); width: 14px;"></i>
+              <span>Hands-free voice logging available:</span>
+            </div>
+            <button type="button" id="btn-modal-voice-input" class="btn btn-outline btn-sm" style="height: 28px; padding: 2px 8px; font-size: var(--text-xs); color: var(--accent-primary); border-color: var(--accent-primary); gap: 4px;">
+              <i data-lucide="mic" style="width: 12px;"></i> Speak to Fill
+            </button>
+          </div>
+
+          <div class="grid grid-12" style="gap: 12px; margin-bottom: 0;">
+            <div class="col-6 form-group">
+              <label class="form-label" for="add-tx-date">Date *</label>
+              <input type="date" id="add-tx-date" class="input" required>
+            </div>
+            <div class="col-6 form-group">
+              <label class="form-label" for="add-tx-type">Transaction Type *</label>
+              <select id="add-tx-type" class="select" required>
+                <option value="expense">Expense (Outflow)</option>
+                <option value="income">Income (Inflow)</option>
+                <option value="transfer">Transfer</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="add-tx-merchant">Merchant / Outlet *</label>
+            <input type="text" id="add-tx-merchant" class="input" placeholder="e.g. Swiggy, Netflix, Tech Corp, Shell" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="add-tx-desc">Description (Optional)</label>
+            <input type="text" id="add-tx-desc" class="input" placeholder="e.g. Lunch delivery, Monthly subscription">
+          </div>
+
+          <div class="grid grid-12" style="gap: 12px; margin-bottom: 0;">
+            <div class="col-6 form-group">
+              <label class="form-label" for="add-tx-amount">Amount (₹) *</label>
+              <input type="number" id="add-tx-amount" class="input" placeholder="e.g. 450.00" step="0.01" min="0.01" required>
+            </div>
+            <div class="col-6 form-group">
+              <label class="form-label" for="add-tx-category">Category *</label>
+              <select id="add-tx-category" class="select" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-cancel-add-tx">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 30-Second Financial Setup Wizard Modal (Blur View) -->
+  <div id="modal-quick-setup" class="modal-overlay">
+    <div class="modal" style="max-width: 640px; width: 100%; max-height: 90vh; display: flex; flex-direction: column;">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: rgba(14, 165, 233, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); flex-shrink: 0;">
+            <i data-lucide="sparkles" style="width: 20px; height: 20px;"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: var(--text-base); font-weight: 700;">
+              Personal Financial Setup Wizard
+            </h3>
+            <p style="margin: 0; font-size: 11px; color: var(--text-muted);">
+              Configure your monthly baseline. Add, customize, or remove items below.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm btn-icon" id="btn-close-quick-setup" aria-label="Close modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <form id="form-quick-setup" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+        
+        <!-- Modal Scrollable Body -->
+        <div class="modal-body" style="padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+          
+          <!-- Helper Shortcut Bar -->
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; background: rgba(14, 165, 233, 0.08); border: 1px dashed rgba(14, 165, 233, 0.35); border-radius: var(--radius-md);">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--text-secondary);">
+              <i data-lucide="wand-2" style="color: var(--accent-primary); width: 15px; height: 15px;"></i>
+              <span>Quick Baseline Presets:</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" id="btn-quick-setup-autofill" class="btn btn-outline btn-sm" style="height: 28px; padding: 2px 10px; font-size: 11px; color: var(--accent-primary); border-color: var(--accent-primary); gap: 4px;">
+                <i data-lucide="zap" style="width: 12px;"></i> Auto-Fill Typical
+              </button>
+              <button type="button" id="btn-quick-setup-calc-proportions" class="btn btn-outline btn-sm" style="height: 28px; padding: 2px 10px; font-size: 11px; color: var(--accent-teal); border-color: var(--accent-teal); gap: 4px;">
+                ⚡ 50/30/20 Split
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 1: Monthly Income -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--text-xs); color: var(--accent-income); text-transform: uppercase; letter-spacing: 0.5px;">
+                <i data-lucide="arrow-down-left" style="width: 14px; height: 14px;"></i>
+                <span>Monthly Income Sources</span>
+              </div>
+              <button type="button" id="btn-setup-add-income-row" class="btn btn-ghost btn-sm" style="font-size: 11px; color: var(--accent-income); padding: 2px 6px; gap: 4px;">
+                <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Income
+              </button>
+            </div>
+
+            <div id="setup-income-items-container" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic income rows inserted here -->
+            </div>
+          </div>
+
+          <!-- Section 2: Living Expenses -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--text-xs); color: var(--accent-expense); text-transform: uppercase; letter-spacing: 0.5px;">
+                <i data-lucide="shopping-bag" style="width: 14px; height: 14px;"></i>
+                <span>Monthly Living Expenses (Add & Remove)</span>
+              </div>
+              <button type="button" id="btn-setup-add-expense-row" class="btn btn-ghost btn-sm" style="font-size: 11px; color: var(--accent-expense); padding: 2px 6px; gap: 4px;">
+                <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Expense
+              </button>
+            </div>
+
+            <div id="setup-expense-items-container" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic expense rows inserted here -->
+            </div>
+          </div>
+
+          <!-- Section 3: Savings Goal (Optional) -->
+          <div style="padding: 12px 14px; background-color: var(--bg-surface-elevated); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: var(--text-xs); color: var(--accent-primary);">
+                <i data-lucide="target" style="width: 14px; height: 14px;"></i>
+                <span>Optional: Set a Savings Milestone</span>
+              </span>
+              <button type="button" id="btn-setup-clear-goal" class="btn btn-ghost btn-sm" style="font-size: 11px; padding: 0 4px; color: var(--text-muted);">
+                Clear
+              </button>
+            </div>
+            <div class="grid grid-12" style="gap: 10px; margin-bottom: 0;">
+              <div class="col-6 form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="setup-goal-name" style="font-size: 11px;">Goal Name</label>
+                <input type="text" id="setup-goal-name" class="input" placeholder="e.g. Emergency Fund" value="Emergency Fund">
+              </div>
+              <div class="col-6 form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="setup-goal-target" style="font-size: 11px;">Target Amount (₹)</label>
+                <input type="number" id="setup-goal-target" class="input" placeholder="e.g. 150000" value="150000" min="0" step="1000">
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Estimated Baseline Summary -->
+          <div style="padding: 12px 14px; background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(16, 185, 129, 0.05)); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;">Estimated Monthly Net</div>
+              <div id="setup-live-net" style="font-size: var(--text-base); font-weight: 700; color: var(--accent-teal);">₹0.00 / month</div>
+            </div>
+            <div style="text-align: right; font-size: 11px; color: var(--text-secondary);">
+              <div>Inflow: <strong id="setup-live-income" style="color: var(--accent-income);">₹0</strong></div>
+              <div>Spending: <strong id="setup-live-expense" style="color: var(--accent-expense);">₹0</strong></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-surface);">
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-cancel-quick-setup">
+            Skip to Dashboard
+          </button>
+          <button type="submit" id="btn-submit-quick-setup" class="btn btn-primary btn-sm" style="font-weight: 600; padding: 6px 16px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-teal)); border: none; gap: 6px;">
+            <i data-lucide="check"></i> Save & Launch FinPilot
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="modal-delete-confirm" class="modal-overlay">
+    <div class="modal" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--accent-expense);">
+          <i data-lucide="alert-triangle" style="color: var(--accent-expense);"></i> Confirm Deletion
+        </h3>
+        <button type="button" class="btn btn-ghost btn-sm btn-icon" id="btn-close-delete-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-confirm-message" style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5;">
+          Are you sure you want to delete this transaction? This action will immediately recalculate your cash flow and summaries.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-delete">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-delete"><i data-lucide="trash-2"></i> Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. Mandatory First-Run Educational Modal -->
+  <div id="modal-first-run" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="shield-alert" style="color: var(--accent-primary);"></i>
+          <span>Welcome to FinPilot</span>
+        </h3>
+      </div>
+      <div class="modal-body">
+        <div style="font-size: var(--text-sm); line-height: 1.6; color: var(--text-secondary); display: flex; flex-direction: column; gap: 12px;">
+          <p><strong>FinPilot is an educational prototype. It is not regulated financial advice.</strong></p>
+          <p>Our core privacy & accuracy guarantees:</p>
+          <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+            <li><strong>Zero Credentials:</strong> We never ask for bank credentials, card numbers, OTPs, or bank account logins. Data is loaded strictly via CSV upload or sample data.</li>
+            <li><strong>Deterministic Arithmetic:</strong> All totals, summaries, and scenario timelines are calculated by pure JavaScript formulas. The AI never guesses numbers.</li>
+            <li><strong>Neutral Review Flags:</strong> Unusual activity is flagged for your review with neutral prompts. It is never labeled as fraud.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-dismiss-first-run" class="btn btn-primary" style="width: 100%;">
+          I Understand & Agree
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Calculation Explanation Modal ("How is this calculated?") -->
+  <div id="modal-calculation" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="calc-modal-title">Calculation Breakdown</h3>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="document.getElementById('modal-calculation').classList.remove('open')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="calc-modal-content">
+        <!-- Injected via ui.js -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-calculation').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Create Goal Modal -->
+  <div id="modal-create-goal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="target"></i> Create New Savings Goal</h3>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="document.getElementById('modal-create-goal').classList.remove('open')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-create-goal">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="goal-input-name">Goal Name</label>
+            <input type="text" id="goal-input-name" class="input" placeholder="e.g. Emergency Fund, New Laptop, Holiday" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="goal-input-target">Target Amount (₹)</label>
+            <input type="number" id="goal-input-target" class="input" placeholder="100000" min="1000" step="500" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="goal-input-current">Current Savings Allocated (₹)</label>
+            <input type="number" id="goal-input-current" class="input" placeholder="25000" min="0" step="500" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="goal-input-date">Target Date</label>
+            <input type="date" id="goal-input-date" class="input" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-create-goal').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> Create Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. User Account Profile & Switcher Modal -->
+  <div id="modal-account-profile" class="modal-overlay">
+    <div class="modal" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="user" style="color: var(--accent-primary);"></i>
+          <span>User Account & Security</span>
+        </h3>
+        <button type="button" class="btn btn-ghost btn-sm btn-icon" id="btn-close-account-modal" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Active User Info Card -->
+        <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+          <div id="acc-modal-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), #6366f1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+            U
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div id="acc-modal-name" style="font-size: var(--text-base); font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Demo User</div>
+            <div id="acc-modal-email" style="font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: 4px;">demo@finpilot.local</div>
+            <span id="acc-modal-role" class="badge" style="background-color: var(--accent-primary-subtle); color: var(--accent-primary); font-size: 11px; padding: 2px 8px; border-radius: 9999px;">
+              Active Session
+            </span>
+          </div>
+        </div>
+
+        <!-- Account Data Summary Stats -->
+        <div class="grid grid-12" style="gap: 12px; margin-bottom: 18px;">
+          <div class="col-6 card" style="padding: 12px; text-align: center; background-color: var(--bg-surface); border: 1px solid var(--border-subtle); margin-bottom: 0;">
+            <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 2px;">Stored Records</div>
+            <div id="acc-modal-tx-count" style="font-size: var(--text-base); font-weight: 700; color: var(--text-primary);">0 records</div>
+          </div>
+          <div class="col-6 card" style="padding: 12px; text-align: center; background-color: var(--bg-surface); border: 1px solid var(--border-subtle); margin-bottom: 0;">
+            <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 2px;">Total Spending</div>
+            <div id="acc-modal-tx-total" style="font-size: var(--text-base); font-weight: 700; color: var(--accent-expense);">₹0.00</div>
+          </div>
+        </div>
+
+        <!-- Switch Profile Dropdown -->
+        <div class="form-group" style="margin-bottom: 18px;">
+          <label class="form-label" for="btn-account-switch" style="display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="users" style="width: 14px;"></i> Switch Saved Account Profile
+          </label>
+          <select id="btn-account-switch" class="select" style="width: 100%;">
+            <!-- Dynamically populated via accounts.js -->
+          </select>
+          <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">
+            Each account stores isolated transactions, categories, and savings goals.
+          </span>
+        </div>
+
+        <!-- Quick Account Actions -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" id="btn-account-clear-data" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: flex-start; color: var(--accent-expense);">
+            <i data-lucide="trash-2"></i>
+            <span>Clear Transactions for This Account</span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button type="button" id="btn-account-signout" class="btn btn-danger btn-sm">
+          <i data-lucide="log-out"></i> Sign Out
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-account-profile').classList.remove('open')">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Application Entrypoint -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+/* public/css/chat.css */
+/* Stitch "Paper & Ink" design for Munim AI Copilot */
+
+/* --- Slide-Over Drawer Container --- */
+.munim-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.munim-drawer-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.munim-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 460px;
+  max-width: 100vw;
+  background: var(--munim-paper, #FBF9F5);
+  color: var(--munim-ink, #262320);
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1001;
+  font-family: var(--font-sans);
+  border-left: 1px solid rgba(194, 65, 12, 0.15);
+}
+
+[data-theme="dark"] .munim-panel {
+  --munim-paper: #181614;
+  --munim-ink: #f5f0eb;
+  --munim-card: #221f1c;
+  --munim-border: #38332e;
+  border-left-color: rgba(245, 158, 11, 0.15);
+}
+
+:root {
+  --munim-paper: #FAF7F2;
+  --munim-ink: #292524;
+  --munim-card: #FFFFFF;
+  --munim-border: #E7DFD5;
+  --munim-terracotta: #C2410C;
+  --munim-terracotta-subtle: #FFEDD5;
+  --munim-saffron: #D97706;
+  --munim-saffron-subtle: #FEF3C7;
+  --munim-ink-muted: #78716C;
+}
+
+.munim-drawer-overlay.open .munim-panel {
+  transform: translateX(0);
+}
+
+/* --- Floating Munim Launcher Button --- */
+.munim-floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  height: 52px;
+  padding: 0 20px 0 14px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #c2410c, #ea580c);
+  color: #FFFFFF;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  box-shadow: 0 10px 20px -3px rgba(194, 65, 12, 0.35), 0 4px 6px -2px rgba(194, 65, 12, 0.2);
+  cursor: pointer;
+  z-index: 900;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.munim-floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px -3px rgba(194, 65, 12, 0.45);
+}
+
+/* --- Traditional Ink Stamp Avatar --- */
+.munim-stamp-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--munim-terracotta);
+  background-color: var(--munim-terracotta-subtle);
+  color: var(--munim-terracotta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'Fraunces', Georgia, serif;
+  box-shadow: inset 0 0 0 1px rgba(194, 65, 12, 0.4);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* --- Header --- */
+.munim-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--munim-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--munim-paper);
+}
+
+.munim-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.munim-title-text {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--munim-terracotta);
+  line-height: 1.2;
+}
+
+.munim-subtitle-text {
+  font-size: 11px;
+  color: var(--munim-ink-muted);
+}
+
+.munim-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- History Drawer Inside Panel --- */
+.munim-history-drawer {
+  position: absolute;
+  top: 65px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--munim-paper);
+  z-index: 10;
+  padding: 16px;
+  overflow-y: auto;
+  display: none;
+  border-bottom: 1px solid var(--munim-border);
+}
+
+.munim-history-drawer.open {
+  display: block;
+}
+
+.munim-history-item {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--munim-border);
+  background: var(--munim-card);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  transition: all 0.15s ease;
+}
+
+.munim-history-item:hover {
+  border-color: var(--munim-terracotta);
+}
+
+/* --- Message Thread --- */
+.munim-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* --- Message Bubbles --- */
+.munim-msg-row {
+  display: flex;
+  flex-direction: column;
+  max-width: 90%;
+  animation: fadeInMsg 0.2s ease-out;
+}
+
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.munim-msg-user {
+  align-self: flex-end;
+  background: var(--munim-terracotta-subtle);
+  color: var(--munim-terracotta);
+  border: 1px solid rgba(194, 65, 12, 0.2);
+  border-radius: 14px 14px 2px 14px;
+  padding: 10px 14px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .munim-msg-user {
+  background: rgba(194, 65, 12, 0.2);
+  color: #ffedd5;
+  border-color: rgba(194, 65, 12, 0.35);
+}
+
+.munim-msg-assistant {
+  align-self: flex-start;
+  background: var(--munim-card);
+  color: var(--munim-ink);
+  border: 1px solid var(--munim-border);
+  border-radius: 14px 14px 14px 2px;
+  padding: 14px 16px;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.munim-msg-assistant p {
+  margin: 0 0 8px 0;
+}
+
+.munim-msg-assistant p:last-child {
+  margin-bottom: 0;
+}
+
+.munim-msg-assistant ul {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.munim-msg-assistant li {
+  margin-bottom: 4px;
+}
+
+/* --- Status Indicator --- */
+.munim-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--munim-terracotta);
+  font-style: italic;
+  padding: 6px 12px;
+  background: rgba(194, 65, 12, 0.05);
+  border-radius: 9999px;
+  align-self: flex-start;
+  margin-top: -6px;
+}
+
+.munim-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--munim-terracotta);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Source Chips --- */
+.munim-sources-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--munim-border);
+}
+
+.munim-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background: var(--munim-paper);
+  border: 1px solid var(--munim-border);
+  color: var(--munim-ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.munim-source-chip:hover {
+  border-color: var(--munim-terracotta);
+  color: var(--munim-terracotta);
+  background: var(--munim-terracotta-subtle);
+}
+
+.munim-source-calc {
+  border-color: rgba(217, 119, 6, 0.4);
+  color: var(--munim-saffron);
+}
+
+/* --- Action Proposal Card --- */
+.munim-proposal-card {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #FFFDF9;
+  border: 1px solid var(--munim-terracotta);
+  border-left: 4px solid var(--munim-terracotta);
+  border-radius: var(--radius-md);
+}
+
+[data-theme="dark"] .munim-proposal-card {
+  background: #241c16;
+}
+
+.munim-proposal-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--munim-terracotta);
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.munim-proposal-desc {
+  font-size: var(--text-sm);
+  color: var(--munim-ink);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.munim-proposal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- Unverified Warning Badge --- */
+.munim-unverified-note {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: var(--munim-saffron-subtle);
+  color: #92400e;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-theme="dark"] .munim-unverified-note {
+  background-color: rgba(217, 119, 6, 0.2);
+  color: #fde68a;
+}
+
+/* --- Message Action Buttons (Thumbs / Copy) --- */
+.munim-msg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  font-size: 11px;
+  color: var(--munim-ink-muted);
+}
+
+.munim-msg-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.munim-icon-btn {
+  background: none;
+  border: none;
+  color: var(--munim-ink-muted);
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.munim-icon-btn:hover {
+  color: var(--munim-terracotta);
+  background: var(--munim-paper);
+}
+
+/* --- Context Starter Chips --- */
+.munim-starters-wrap {
+  padding: 10px 20px 4px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.munim-starter-chip {
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 9999px;
+  background: var(--munim-card);
+  border: 1px solid var(--munim-border);
+  font-size: 11px;
+  color: var(--munim-ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.munim-starter-chip:hover {
+  border-color: var(--munim-terracotta);
+  color: var(--munim-terracotta);
+}
+
+/* --- Chat Input Area --- */
+.munim-input-area {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--munim-border);
+  background: var(--munim-paper);
+}
+
+.munim-input-box {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  background: var(--munim-card);
+  border: 1px solid var(--munim-border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease;
+}
+
+.munim-input-box:focus-within {
+  border-color: var(--munim-terracotta);
+}
+
+.munim-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: var(--text-sm);
+  font-family: inherit;
+  color: var(--munim-ink);
+  line-height: 1.4;
+  max-height: 120px;
+  min-height: 24px;
+  padding: 0;
+}
+
+.munim-send-btn {
+  border: none;
+  background: var(--munim-terracotta);
+  color: #FFFFFF;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: background 0.15s ease;
+}
+
+.munim-send-btn:hover {
+  background: #9a3412;
+}
+
+.munim-stop-btn {
+  background: var(--munim-saffron);
+}
+
+.munim-disclaimer {
+  font-size: 11px;
+  color: var(--munim-ink-muted);
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Mobile Fullscreen */
+@media (max-width: 640px) {
+  .munim-panel {
+    width: 100vw;
+  }
+  .munim-floating-btn {
+    bottom: 16px;
+    right: 16px;
+    height: 48px;
+    padding: 0 16px 0 12px;
+  }
+}
