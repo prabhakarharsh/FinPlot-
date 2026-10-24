@@ -532,6 +532,21 @@
                 <button id="btn-reset-scenario" class="btn btn-ghost btn-sm"><i data-lucide="rotate-ccw"></i> Reset</button>
               </div>
 
+              <!-- Active Goal Target Bar -->
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding: 12px 16px; background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="crosshair" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
+                  <span style="font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Simulating Goal:</span>
+                  <span id="scenario-active-goal-name" style="font-size: var(--text-sm); font-weight: 700; color: var(--accent-primary);">Emergency Fund</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <label for="scenario-goal-select" style="font-size: 11px; color: var(--text-muted);">Switch Goal:</label>
+                  <select id="scenario-goal-select" class="select" style="font-size: var(--text-xs); padding: 4px 10px; height: 32px; min-width: 180px;">
+                    <!-- Populated dynamically via scenarios.js -->
+                  </select>
+                </div>
+              </div>
+
               <!-- Sliders & Inputs -->
               <div class="grid grid-12" style="gap: 16px; margin-bottom: 20px;">
                 
@@ -583,6 +598,22 @@
                   <div class="col-4">
                     <span class="kpi-label">Projected Date</span>
                     <div id="scenario-projected-date" class="kpi-value" style="font-size: var(--text-2xl); color: var(--accent-teal); margin-top: 4px;">TBD</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Multi-Goal Portfolio Summary (Visible when >1 goal exists) -->
+              <div id="multi-goal-portfolio-banner" style="display: none; margin-bottom: 20px; padding: 12px 16px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="layers" style="width: 16px; height: 16px; color: #3B82F6;"></i>
+                    <strong style="font-size: var(--text-xs); color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Multi-Goal Portfolio:</strong>
+                    <span id="multi-goal-count-text" style="font-size: var(--text-xs); color: var(--text-secondary);">2 Active Goals</span>
+                  </div>
+                  <div style="font-size: var(--text-xs); color: var(--text-secondary);">
+                    Total Combined Deficit: <strong id="multi-goal-total-deficit" style="color: var(--text-primary);">₹0.00</strong>
+                    &nbsp;|&nbsp;
+                    All Goals Funded In: <strong id="multi-goal-total-months" style="color: #3B82F6; font-weight: 700;">0 months</strong>
                   </div>
                 </div>
               </div>

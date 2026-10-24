@@ -7,6 +7,7 @@ import { formatINR } from './ui.js';
 import { renderIcons } from './icons.js';
 
 let projectionChart = null;
+let selectedGoalId = null;
 
 export function initScenarios() {
   // Slider listeners
@@ -19,6 +20,12 @@ export function initScenarios() {
 
   sliders.forEach(id => {
     document.getElementById(id)?.addEventListener('input', runSimulation);
+  });
+
+  // Goal Selector listener
+  document.getElementById('scenario-goal-select')?.addEventListener('change', (e) => {
+    selectedGoalId = e.target.value;
+    runSimulation();
   });
 
   // Reset button
@@ -44,13 +51,25 @@ export function initScenarios() {
     }
   });
 
-  state.subscribe((event) => {
-    if (event === 'transactions:updated' || event === 'goals:updated') {
+  state.subscribe((event, payload) => {
+    if (event === 'scenario:goal_selected') {
+      selectedGoalId = payload;
+      runSimulation();
+    } else if (event === 'transactions:updated' || event === 'goals:updated') {
       runSimulation();
     }
   });
 
   runSimulation();
+}
+
+export function selectGoal(goalId) {
+  selectedGoalId = goalId;
+  runSimulation();
+}
+
+export function getSelectedGoalId() {
+  return selectedGoalId;
 }
 
 export function runSimulation() {
@@ -61,12 +80,40 @@ export function runSimulation() {
   const monthlyIncome = sum.income / monthCount;
   const monthlyExpenses = sum.spending / monthCount;
 
-  // Selected primary goal
-  const primaryGoal = state.goals[0] || {
-    name: 'Emergency Fund',
-    target_amount: 300000,
-    current_amount: 110000
-  };
+  // Determine active target goal from state.goals
+  const goalSelect = document.getElementById('scenario-goal-select');
+  const activeGoalNameEl = document.getElementById('scenario-active-goal-name');
+
+  let targetGoal = null;
+
+  if (state.goals && state.goals.length > 0) {
+    if (!selectedGoalId || !state.goals.some(g => (g.id || g.name) === selectedGoalId)) {
+      selectedGoalId = state.goals[0].id || state.goals[0].name;
+    }
+    targetGoal = state.goals.find(g => (g.id || g.name) === selectedGoalId) || state.goals[0];
+
+    if (goalSelect) {
+      goalSelect.innerHTML = state.goals.map(g => {
+        const id = g.id || g.name;
+        const isSel = id === selectedGoalId ? 'selected' : '';
+        return `<option value="${id}" ${isSel}>${g.name} (${formatINR(g.target_amount)})</option>`;
+      }).join('');
+    }
+  } else {
+    // Default fallback goal if user has no goals yet
+    targetGoal = {
+      name: 'Emergency Fund',
+      target_amount: 300000,
+      current_amount: 110000
+    };
+    if (goalSelect) {
+      goalSelect.innerHTML = `<option value="default">Emergency Fund (₹3,00,000)</option>`;
+    }
+  }
+
+  if (activeGoalNameEl) {
+    activeGoalNameEl.textContent = targetGoal.name;
+  }
 
   // Find dining and shopping averages
   const diningCat = sum.categories.find(c => c.name === 'Dining');
@@ -96,10 +143,10 @@ export function runSimulation() {
   if (labelExtra) labelExtra.textContent = `+${formatINR(extraIncome)}/mo`;
   if (labelOneOff) labelOneOff.textContent = formatINR(oneOffExpense);
 
-  // Execute scenario in engine.js
+  // Execute scenario in engine.js for the selected goal
   const scenarioResult = runScenario({
-    goal: primaryGoal.target_amount,
-    currentSavings: primaryGoal.current_amount,
+    goal: targetGoal.target_amount,
+    currentSavings: targetGoal.current_amount,
     monthlyIncome,
     monthlyExpenses,
     cutByCategory: {
@@ -125,6 +172,36 @@ export function runSimulation() {
     projectedDateEl.textContent = scenarioResult.projectedDate || 'Timeline exceeds 30 yrs';
   }
 
+  // Update Multi-Goal Portfolio Banner when more than 1 goal exists
+  const portfolioBanner = document.getElementById('multi-goal-portfolio-banner');
+  if (portfolioBanner) {
+    if (state.goals && state.goals.length > 1) {
+      portfolioBanner.style.display = 'block';
+
+      const totalTarget = state.goals.reduce((acc, g) => acc + (Number(g.target_amount) || 0), 0);
+      const totalCurrent = state.goals.reduce((acc, g) => acc + (Number(g.current_amount) || 0), 0);
+      const remainingDeficit = Math.max(0, totalTarget - totalCurrent);
+
+      const countEl = document.getElementById('multi-goal-count-text');
+      const deficitEl = document.getElementById('multi-goal-total-deficit');
+      const totalMonthsEl = document.getElementById('multi-goal-total-months');
+
+      if (countEl) countEl.textContent = `${state.goals.length} Active Goals`;
+      if (deficitEl) deficitEl.textContent = formatINR(remainingDeficit);
+
+      if (totalMonthsEl) {
+        if (scenarioResult.newMonthlySavings > 0) {
+          const portfolioMonths = Math.ceil(remainingDeficit / scenarioResult.newMonthlySavings);
+          totalMonthsEl.textContent = `${portfolioMonths} months (~${(portfolioMonths / 12).toFixed(1)} yrs)`;
+        } else {
+          totalMonthsEl.textContent = 'Unattainable (Surplus <= 0)';
+        }
+      }
+    } else {
+      portfolioBanner.style.display = 'none';
+    }
+  }
+
   // Update Assumptions list in accordion
   const assumptionsList = document.getElementById('scenario-assumptions-list');
   if (assumptionsList) {
@@ -132,7 +209,16 @@ export function runSimulation() {
   }
 
   // Render Projection Chart
-  renderProjectionChart(scenarioResult, primaryGoal.target_amount);
+  renderProjectionChart(scenarioResult, targetGoal.target_amount);
+
+  // Notify reactive state so Goals list updates its active card with the simulation result
+  state.notify('scenario:simulated', {
+    goalId: selectedGoalId,
+    targetGoal,
+    scenarioResult
+  });
+
+  renderIcons();
 }
 
 function renderProjectionChart(scenario, goalTarget) {

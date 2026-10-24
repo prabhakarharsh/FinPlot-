@@ -892,13 +892,17 @@ export const api = {
     const localGoals = localStorage.getItem(`finpilot_goals_${userId}`) || localStorage.getItem('finpilot_goals');
     if (localGoals !== null) {
       try {
-        state.setGoals(JSON.parse(localGoals) || []);
+        const parsed = JSON.parse(localGoals);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          state.setGoals(parsed);
+        } else {
+          this.seedDefaultGoals();
+        }
       } catch {
-        state.setGoals([]);
+        this.seedDefaultGoals();
       }
     } else {
-      state.setGoals([]);
-      localStorage.setItem(`finpilot_goals_${userId}`, JSON.stringify([]));
+      this.seedDefaultGoals();
     }
   },
 
@@ -918,6 +922,9 @@ export const api = {
    */
   async loadSampleData() {
     const userId = state.currentUser?.id || 'demo-user-1';
+    if (!state.goals || state.goals.length === 0) {
+      this.seedDefaultGoals();
+    }
     try {
       if (Array.isArray(SAMPLE_TRANSACTIONS) && SAMPLE_TRANSACTIONS.length > 0) {
         const txns = SAMPLE_TRANSACTIONS.map((t, idx) => ({
